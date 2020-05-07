@@ -1,0 +1,159 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block title %} My profile {% endblock %}
+{% block page %}
+<br><br><br><br>
+<div class="container">
+  <div class="row">
+    <div class="col-md-6 img">
+      <img src="{{user.profile.get_image_url}}" alt="" class="avatar secondary-content" style="width: 250px;height: 250px;margin-top: -100px;margin-left: -200px; position: absolute; top: 50%;left: 50%;" usemap="#workmap">
+    </div>
+    <div class="col-md-6 details">
+    <p>
+	    <blockquote>
+        {{user.get_full_name}}
+      </blockquote>
+        {% if request.user == user %}
+          Username: {{user.username}} <br>
+          Email: {{user.email}} <br>
+        {% endif %}
+
+        Preferences:
+        {% for preference in user.profile.preferences.all %}
+          {{preference.name}}
+          {% if not forloop.last %},{% endif %}
+        {% endfor %}
+        <br>
+        Date joined: {{user.date_joined}}<br>
+        Last activity: {{user.last_login}}<br>
+
+        {% include 'blog/user_follow_section.html' %}
+        {% include 'blog/add_to_friends_section.html' %}
+
+        {% if request.user == user %}
+          <p><a class="btn btn-warning" href="{% url 'user_edit'%}">Edit</a></p>
+        {% endif %}
+    </div>
+  </div>
+</div>
+
+<hr>
+<h2 style="text-align: center;">User's articles</h2>
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 col-md-10 mx-auto">
+       {% for art in articles %}
+        <div class="post-preview">
+          <a href="{% url 'blog:article_detail' art.id %}">
+            <h2 class="post-title">
+              {{art.title}}
+            </h2>
+            <h3 class="post-subtitle">
+              {{art.description}}
+            </h3>
+          </a>
+          <p class="post-meta">Posted by
+            <a href="{% url 'profile' user.id %}">{{user.get_full_name}}</a>
+            on {{art.post_date}}</p>
+        </div>
+        <hr>
+      {% endfor %}
+
+  <div class="clearfix">
+    <nav aria-label="Page navigation">
+      <ul class="pagination">
+
+        {% if articles.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{articles.previous_page_number }}">&laquo</a>
+          </li>
+        {% endif %}
+
+        {% for a in articles.paginator.page_range %}
+          <li class="page-item {% if articles.number == a %}active{% endif %}">
+            <a class="page-link" href="?page={{ a }}">{{ a }}</a>
+          </li>
+        {% endfor %}
+
+        {% if articles.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{articles.next_page_number }}">&raquo</a>
+          </li>
+        {% endif %}
+
+      </ul>
+    </nav>
+  </div>
+
+<script>
+  $(document).ready(function(){
+    $(document).on('click', '#follow_id', function(event){
+        event.preventDefault();
+        var pk = $(this).attr('value');
+        $.ajax({
+          type: 'POST',
+          url: '{% url "profile_follow" %}',
+          data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+          dataType: 'json',
+          success: function(response){
+            var action = $('#follow_id').attr('name');
+            var previous_followers = parseInt($('.count').text());
+            if (action == 'follow')
+            {
+              $('#follow_id').removeClass('btn btn-success').addClass('btn btn-danger').text("Unfollow")
+              $('#follow_id').attr('name', 'unfollow')
+              $('.count').text(previous_followers + 1)
+            }
+            else if (action == 'unfollow')
+            {
+              $('#follow_id').removeClass('btn btn-danger').addClass('btn btn-success').text("Follow");
+              $('#follow_id').attr('name', 'follow')
+              $('.count').text(previous_followers - 1)
+            }
+          },
+          error: function(rs, e){
+            console.log(rs.responseText);
+          },
+        });
+    });
+    $(document).on('click', '#friend_id', function(event){
+        event.preventDefault();
+        var pk = $(this).attr('value');
+        var action = $(this).attr('name');
+        console.log(action)
+        $.ajax({
+          type: 'POST',
+          url: '{% url "add_to_friends" %}',
+          data: {'id': pk, 'action': action, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+          dataType: 'json',
+          success: function(response){
+            var previous_number_of_friends = parseInt($('.number_of_friends').text());
+            if (action == 'add_to_friends')
+            {
+              $('#friend_id').removeClass('btn btn-success').addClass('btn btn-danger').text("Cancel request")
+              $('#friend_id').attr('name', 'cancel_request')
+
+            }
+            else if (action == 'remove_from_friends')
+            {
+              $('#friend_id').removeClass('btn btn-danger').addClass('btn btn-success').text("Add to friends");
+              $('#friend_id').attr('name', 'add_to_friends')
+              $('.number_of_friends').text(previous_number_of_friends - 1)
+            }
+
+            else if (action == 'cancel_request')
+            {
+              $('#friend_id').removeClass('btn btn-danger').addClass('btn btn-success').text("Add to friends");
+              $('#friend_id').attr('name', 'add_to_friends')
+            }
+          },
+          error: function(rs, e){
+            console.log(rs.responseText);
+          },
+        });
+    });
+  });
+
+</script>
+
+{% endblock %}

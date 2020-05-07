@@ -1,0 +1,90 @@
+{% extends 'blog/base.html' %}
+{% block title %}Add article{% endblock title %}
+{% load static %}
+
+{% block css %}
+  <link href="{% static 'blog/css/manage_article.css'%}" rel="stylesheet">
+{% endblock %}
+
+{% block page %}
+  <div class="all">
+      <div class="container-fluid">
+          <div class="row">
+              <div class="col-md-12">
+                  <div class="card" style="background: #353b48;">
+
+                    <form method="post">
+                      {% csrf_token %}
+                      <h2> +Add Article</h2>
+
+                      {% if form.errors %}
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>{{field.name}}:{{ error|escape }}</strong>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                <strong>{{ error|escape }}</strong>
+                            </div>
+                        {% endfor %}
+                      {% endif %}
+
+                      <div class="card-body">
+                          <div class="form-group">
+                              <label for="{{form.title.id_for_label}}">1.Title </label>
+                              <input type="text" name="{{form.title.html_name}}" class="form-control" id="{{form.title.id_for_label}}" placeholder="Title" required=">
+                          </div>
+                          <div class="form-group">
+                              <label for="{{form.description.id_for_label}}">2.Description </label>
+                              <textarea class="form-control" id="{form.description.id_for_label}}" name="{{form.description.html_name}}" rows="3" required=""></textarea>
+                          </div>
+                          <div class="form-group">
+                            <label for="{{id_category}}">3.Categories </label><br>
+                            <select name="category" id="id_category" multiple required>
+                                {% for x, y in form.fields.category.choices %}
+                                  <option value="{{x}}">{{y}}</option>
+                                {% endfor %}
+                            </select>
+                          </div>
+                          <div class="form-group">
+                              <label for="{{form.tags.id_for_label}}">4.Tags </label><br>
+                              <span style='color:white' class="helptext">A comma-separated list of tags.</span>
+                              <input type="text" name='{{form.tags.html_name}}' class="form-control" id="{{form.tags.id_for_label}}" placeholder="Tags" required="">
+                          </div>
+                          <div class="form-group">
+                            <label for="{{form.text.id_for_label}}">5.Content </label><br>
+                            {{form.text}}
+                          </div>
+                      </div>
+                      <div class="input-group-append d-flex justify-content-center">
+                          <button style="width: 1200px;" type="submit" class="browse btn btn-primary">+Add Article</button>
+                      </div>
+
+                    </form>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    $(document).ready(function() {
+            $('#id_category').multiselect({enableFiltering:true});
+            $('.multiselect').css('border','1px solid white')
+            $('.multiselect').css('color','white')
+
+            $('.multiselect').hover(
+              function() {
+                $(this).css('background-color', '#212529');
+              }, function() {
+                $(this).css('background-color', '');
+              }
+            );
+
+
+        });
+  </script>
+{% endblock %}

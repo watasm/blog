@@ -1,0 +1,50 @@
+{% if popular_articles %}
+        <section id="bg0" class="content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 p-0 ">
+                        <div class="article mr-1 mt-1">
+                            <a href="{% url 'blog:article_detail' popular_articles.0.id %}">
+                                <div class="like_article" style="background-image: url({{popular_articles.0.get_image_url}}); height: 500px;"></div>
+                                <div class="like_article-text">
+                                    <a href="{% url 'blog:article_detail' popular_articles.0.id %}" class="like_article_title">{{popular_articles.0.title}}</a>
+                                    <p class="post-meta ">Posted by <a href="{% url 'profile' popular_articles.0.user.id %}"> {{popular_articles.0.user.get_full_name}} </a> on {{popular_articles.0.post_date}}</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-0 ">
+                        <div class="article mr-1 mt-1">
+                            <a href="{% url 'blog:article_detail' popular_articles.1.id %}">
+                                <div class="like_article" style="background-image: url({{popular_articles.1.get_image_url}}); height: 250px;"></div>
+                                <div class="like_article-text">
+                                    <a href="{% url 'blog:article_detail' popular_articles.1.id %}" class="like_article_title">{{popular_articles.1.title}}</a>
+                                    <p class="post-meta">Posted by <a href="{% url 'profile' popular_articles.1.user.id %}"> {{popular_articles.1.user.get_full_name}} </a> on {{popular_articles.1.post_date}}</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="d-flex ">
+                            <div class="article mr-1 mt-1">
+                                <a href="{% url 'blog:article_detail' popular_articles.2.id %}">
+                                    <div class="like_article" style="background-image: url({{popular_articles.2.get_image_url}});height: 245px; width: 285px;"></div>
+                                    <div class="like_article-text">
+                                        <a href="{% url 'blog:article_detail' popular_articles.2.id %}" class="like_article_title">{{popular_articles.2.title}}</a>
+                                        <p class="post-meta ">Posted by <a href="{% url 'profile' popular_articles.2.user.id %}"> {{popular_articles.2.user.get_full_name}} </a> on {{popular_articles.2.post_date}}</p>
+                                    </div>
+                                </a>
+                            </div>
+                            <div class="article mr-1 mt-1">
+                                <a href="{% url 'blog:article_detail' popular_articles.3.id %}">
+                                    <div class="like_article" style="background-image: url({{popular_articles.3.get_image_url}});height: 245px; width: 285px;"></div>
+                                    <div class="like_article-text">
+                                        <a href="{% url 'blog:article_detail' popular_articles.3.id %}" class="like_article_title">{{popular_articles.3.title}}</a>
+                                        <p class="post-meta ">Posted by <a href="users_profile.html"> {{popular_articles.3.user.get_full_name}} </a> on {{popular_articles.3.post_date}}</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+{% endif %}

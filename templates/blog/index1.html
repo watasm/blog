@@ -1,0 +1,112 @@
+{% extends 'blog/base.html'%}
+{% block title %} Blog {% endblock %}
+{% load static %}
+{% load blog_tags %}
+{% load tz %}
+{% load tz_detect %}
+{% tz_detect %}
+
+{% block page %}
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url(' {%static 'blog/img/home-bg.jpg'%}')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="site-heading">
+            <h1>Clean Blog</h1>
+            <span class="subheading">A Blog Theme by Start Bootstrap</span><br>
+            <span class="subheading"><b>Total articles - {{ total_articles_count }}</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+<br>
+<!-- ОСНОВНОЙ КОНТЕНТ -->
+<section class="col-xs-12">
+      <div class="row">
+        <!-- MAIN -->
+        <main class="col-md-8 col-lg-9" style = "padding-left:200px; padding-right:150px">
+          {% for art in articles %}
+           <div class="post-preview">
+             <a href="{% url 'blog:article_detail' art.id %}">
+               <h2 class="post-title">
+                 {{art.title}}
+               </h2>
+               <h3 class="post-subtitle">
+                 {{art.description}}
+               </h3>
+             </a>
+             <p class="post-meta">Posted by
+               <a href="{% url 'profile' art.user.id %}">{{art.user.get_full_name}}</a>
+               on {{art.post_date}}
+
+             </p>
+              <i class="fas fa-tags"></i> Tags :
+              {% for tag in art.tags.all %}
+                  {% comment %} <a href="{% url "" tag.slug %}"></a> {% endcomment %}
+                  <a href="#"><span class="label label-info">{{ tag.name }}</span></a>
+                  {% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </div>
+            <hr>
+          {% endfor %}
+         <!-- Pager -->
+         <div class="clearfix">
+           <nav aria-label="Page navigation">
+             <ul class="pagination">
+               {% if articles.has_previous %}
+                 <li class="page-item">
+                   <a class="page-link" href="?page={{articles.previous_page_number }}">&laquo</a>
+                 </li>
+               {% endif %}
+
+               {% for a in articles.paginator.page_range %}
+                 <li class="page-item {% if articles.number == a %}active{% endif %}">
+                   <a class="page-link" href="?page={{ a }}">{{ a }}</a>
+                 </li>
+               {% endfor %}
+
+                {% if articles.has_next%}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{articles.next_page_number }}">&raquo</a>
+                  </li>
+                {% endif %}
+             </ul>
+           </nav>
+         </div>
+        </main>
+        <!-- ASIDE -->
+        <div class="col-md-4 col-lg-3">
+          <div class="row">
+            <!-- ASIDE #1 -->
+            <aside class="col-sm-6 col-md-12" style="background-color:#f6f6f6">
+              <i class="post-meta"><a href='{% url "blog:article_feed" %}'>Subscribe to my RSS feed</a></i>
+              <hr>
+              <form class="searchbox" action="." method="get">
+                <input type="text" name="{{form.query.name}}" placeholder="Search.." id="{{form.query.id_for_label}}">
+                <button type="submit" value="Search"> <i class="fa fa-search"></i></button>
+              </form>
+              <hr>
+              {% get_latest_articles 5 %}
+              <hr>
+              {% get_most_commented_articles 5 %}
+              <hr>
+              {% get_most_liked_articles 5 %}
+              <hr>
+            </aside>
+            <!-- ASIDE #2 -->
+            <aside class="col-sm-6 col-md-12">
+
+            </aside>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  <!-- Footer -->
+<script>
+</script>
+{% endblock %}

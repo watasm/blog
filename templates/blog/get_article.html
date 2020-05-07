@@ -1,0 +1,197 @@
+{% extends 'blog/base.html' %}
+{% load blog_tags %}
+{% load static %}
+{% block title %} Article {% endblock %}
+{% block page %}
+<script type="text/javascript">
+  window.onscroll = function() {scrollFunction()};
+  function scrollFunction() {
+    if (document.body.scrollTop > 250 || document.documentElement.scrollTop > 250) {
+      $(".icon-bar").show();
+    } else {
+      $(".icon-bar").hide();
+    }
+  }
+</script>
+
+
+<link rel="stylesheet" href="{% static 'blog/css/social-bar.css' %}">
+
+<div class="icon-bar" style="display:none">
+  <a href="https://www.facebook.com/sharer/sharer.php?u={{request.build_absolute_uri}}" class='facebook'><i class="fab fa-facebook-f"></i></a>
+  <a href="https://twitter.com/home?status={{share_string_desc}}%20{{request.build_absolute_uri}}" class="twitter"><i class="fab fa-twitter"></i></a>
+  <a href="https://plus.google.com/share?url={{request.build_absolute_uri}}" class="google"><i class="fab fa-google"></i></a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url={{request.build_absolute_uri}}&{{article.title}}&summary={{share_string_desc}}&source=={{request.build_absolute_uri}}" class="linkedin"><i class="fab fa-linkedin"></i></a>
+  <a href="http://www.reddit.com/submit?url={{request.build_absolute_uri}}&title={{article.title}}" class="reddit"><i class="fab fa-reddit"></i></a>
+  <a href='{% url "blog:article_share" article.pk  %}' class="email"><i class="fas fa-envelope"></i></a>
+</div>
+<!-- Page Header -->
+  <header class="masthead" style="background-image: url( '{% static 'blog/img/post-bg.jpg' %}')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="post-heading">
+            <h1>{{article.title}}</h1>
+            <h2 class="subheading">{{article.description}}</h2>
+            <span class="meta">Posted by
+              <a href="#">{{article.user.get_full_name}}</a>
+              on {{article.post_date}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- Post Content -->
+  <article>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <p>{{article.text | safe }}</p>
+
+          <!-- <a href="#">
+            <img class="img-fluid" src="{% static 'blog/img/post-sample-image.jpg' %} " alt="">
+          </a>
+          <span class="caption text-muted">To go places and do things that have never been done before – that’s what living is all about.</span> -->
+        </div>
+      </div>
+
+      <hr>
+      <div id="article_like_section">
+        {% include 'blog/article_like_section.html' %}
+      </div>
+      <hr>
+
+      {% if request.user == article.user %}
+        <a class="btn btn-warning" href="{% url 'blog:article_edit' article.pk %}">Edit Blog Post</a>
+        <a class="btn btn-danger" href="{% url 'blog:article_delete' article.pk %}"><i class="fa fa-trash"></i>Delete Blog Post</a>
+      {% endif %}
+      <hr>
+      <hr>
+      <div>
+        {% get_most_commented_articles 5 %}
+        </div>
+      <div>
+        <hr>
+        {% get_most_liked_articles 5 %}
+        <hr>
+      </div>
+      <div id = 'comments'>
+      <h1>Comments</h1>
+
+      {% for comment in article.comments.all %}
+          <div class="comment">
+              <strong>{{ comment.user.get_full_name }}</strong>
+              <p>{{ comment.text |linebreaks }}</p>
+              <div class="date">{{ comment.post_date }}</div>
+          </div>
+
+          <div id="comment_like_section_{{comment.id}}">
+            {% include 'blog/comment_like_section.html' %}
+          </div>
+          <hr>
+      {% empty %}
+          <p>No comments here yet :(</p>
+      {% endfor %}
+
+      </div>
+      {% if request.user.is_authenticated %}
+        <form  method="post" id = 'comment' enctype="multipart/form-data">
+          {% csrf_token %}
+          {{comment_form.as_p}}
+          <button type="submit">Add</button>
+        </form>
+      {% else %}
+        <p><a href="{% url 'account_login' %}?next={% url 'blog:article_detail' article.id %}">Please login</a></p>
+      {% endif %}
+    </div>
+  </article>
+
+<script>
+    $(document).ready(function(){
+      if (document.location.protocol === 'https:')
+        websocket_protocol = 'wss://';
+      else
+        websocket_protocol = 'ws://';
+
+      var socket_url = websocket_protocol + window.location.host + '/ws' + window.location.pathname;
+      var socket = new WebSocket(socket_url);
+
+      socket.onmessage = function(event){
+          console.log(event)
+          var new_comment = JSON.parse(event.data)
+          $('#comments').append('<div class="comment">' + '<strong>' + new_comment.user + '</strong>' + '<p>' + new_comment.comment_text
+            + '</p>'+ '<div class="date">' + new_comment.post_date + '</div>' + '<div>' + new_comment.like + '</div>'
+            + ' <div id = '+ 'comment_like_section_' + new_comment.id + ' > '
+            + '<form action="/like_comment" method="post">' + '{% csrf_token %}'
+            + '<button class = "btn btn-primary" type="submit" id = "comment_like" name="comment_id" value = ' + new_comment.id + '>'
+            + 'Like - ' + '<span>' + 0 + '</span>' + '</button>' + '</div>'
+            + '<hr>' + '</div>')
+
+      };
+
+      socket.onopen = function(event)
+      {
+          // comment
+          console.log('Socket opened', event)
+          var form = $("#comment")
+          form.submit(function(e){
+              e.preventDefault()
+              var comment_text = $('#id_text').val()
+              data = {
+                  'comment_text': comment_text,
+              }
+              socket.send(JSON.stringify(data))
+              $('#id_text').val('')
+          });
+
+          $('#id_text').keypress(function(e){
+              if (e.which == 13){
+                  $("#comment").submit();
+              }
+          });
+
+      };
+
+      socket.onclose= function(event){
+          console.log('Socket closed', event)
+      };
+
+
+      $(document).on('click', '#comment_like', function(event){
+          event.preventDefault();
+          var pk = $(this).attr('value');
+          $.ajax({
+            type: 'POST',
+            url: '{% url "blog:like_comment" %}',
+            data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+            dataType: 'json',
+            success: function(response){
+              $('#comment_like_section_' + pk).html(response['form'])
+            },
+          });
+      });
+
+      $(document).on('click', '#article_like', function(event){
+          event.preventDefault();
+          var pk = $(this).attr('value');
+          $.ajax({
+            type: 'POST',
+            url: '{% url "blog:like_article" %}',
+            data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+            dataType: 'json',
+            success: function(response){
+              $('#article_like_section').html(response['form'])
+            },
+            error: function(rs, e){
+              console.log(rs.responseText);
+            }
+          });
+      });
+    })
+</script>
+<br>
+
+{% endblock page %}

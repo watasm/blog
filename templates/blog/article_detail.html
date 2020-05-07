@@ -1,0 +1,272 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block title %}{{article.title}}{% endblock %}
+
+{% block css %}
+  <link type="text/css" rel="stylesheet" href="{% static 'blog/css/article.css' %}">
+{% endblock %}
+
+
+{% block page %}
+<div class="all">
+  <div class="similar" style="margin-left: 30px;margin-top: 55px;">
+    {% for similar_article in similar_articles %}
+      <div class="news">
+          <img src="{{similar_article.get_image_url}}" >
+          <p style='position: relative;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;'>
+            <a href="#">{{similar_article.title}}</a><br>
+            {{similar_article.description}}
+          </p>
+          <div class="posttime">
+            <small>
+              <div class="time">
+                <i class="fa fa-clock"></i>{{similar_article.post_date}}
+              </div>
+            </small>
+          </div>
+      </div>
+    {% endfor %}
+  </div>
+  <div class="top">
+      <div class="col-md-10 col-sm-12 col-11 article">
+          <h3>{{article.title}}</h3>
+          <small>
+            <div class="time">
+              <i class="fa fa-clock"></i>{{article.post_date}}
+             </div>
+             <div id="category">
+                {% for category in article.category.all%}
+                    {{category}}
+                  {% if not forloop.last %} |
+                  {% endif %}
+                {% endfor %}
+            </div>
+          </small>
+          <img style="width: 100%;max-width: 100%;height: 450px;margin-bottom: 50px;" src="{{article.get_image_url}}" alt="">
+          <p>{{article.text|safe }}</p>
+          <div class="box">
+              <div class="box_item box_item_border_right">
+                  <button type="submit" id="id_article" name="article_id" value="{{article.pk}}" class='button_like_a {% if is_article_liked %}active{%else%}inactive{%endif%}' ><i class="far fa-thumbs-up"></i></button>
+              </div>
+              <div class="box_item box_item_border_right">
+                  <button type="submit" class='button_like_a {% if is_bookmarked %}active{%else%}inactive{%endif%}' id="id_bookmark" value="{{article.pk}}"><i class="far fa-bookmark"></i></buttom>
+              </div>
+              {% if request.user == article.user%}
+                <div class="box_item box_item_border_right active">
+                    <a href="{% url 'blog:article_edit' article.pk %}"><i class="fas fa-edit"></i></a>
+                </div>
+                <div class="box_item active">
+                    <a href="{% url 'blog:article_delete' article.pk %}"><i class="fas fa-trash"></i></a>
+                </div>
+              {% else %}
+                <div class="box_item box_item_border_right">
+                    <button class="button_like_a disabled_button" disabled><i class="fas fa-edit"></i></button>
+                </div>
+                <div class="box_item">
+                    <button class="button_like_a disabled_button" disabled><i class="fas fa-trash"></i></button>
+                </div>
+              {% endif %}
+
+          </div>
+          <h4>Comments : <span id="comments_count">{{comments_count}}</span></h4>
+            {% if request.user.is_authenticated %}
+
+              <form method="post" id='comment'>
+                <div class="form-group">
+                {% csrf_token %}
+                <textarea name="{{comment_form.text.html_name}}" id="{{comment_form.text.id_for_label}}" maxlength="{{comment_form.text.field.max_length}}" class="form-control" rows="3" required></textarea>
+                </div>
+                <button class="btn btn-primary">Post</button>
+              </form>
+
+            {% else %}
+              <p><a href="{% url 'account_login' %}?next={% url 'blog:article_detail' article.id %}">Please login</a></p>
+            {% endif %}
+          <div class="comments">
+            {% for comment in comments %}
+              <div class="media g-mb-30 media-comment">
+                  <img class="d-flex g-width-50 g-height-50 rounded-circle g-mt-3 g-mr-15" src="{{comment.user.profile.get_image_url}}" alt="No">
+                  <div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">
+                      <div class="g-mb-15">
+                          <h5 class="h5 g-color-gray-dark-v1 mb-0"><a href="{%url 'profile' comment.user.id%}" style="color:inherit">{{comment.user.get_full_name}}</a></h5>
+                          <span class="g-color-gray-dark-v4 g-font-size-12">{{comment.post_date}}</span>
+                      </div>
+                      <p>{{comment.text}}</p>
+
+
+                  <div id="comment_like_section_{{comment.id}}">
+                    {% if request.user.is_authenticated %}
+                        <form action="{% url 'blog:like_comment' %}" method="post">
+                        {% csrf_token %}
+                          <button type="submit" id = "comment_like" name="comment_id" value = "{{comment.pk}}" class="comment_like {% if request.user in comment.comment_likes.all %}liked{% else %}unliked{% endif %}" class="comment_like">
+                            <i class="fa fa-thumbs-up g-pos-rel g-top-1 g-mr-3"></i> <span id="comment_likes_count">{{comment.likes_count}}</span>
+                          </button>
+                        </form>
+                    {% endif %}
+                  </div>
+
+
+                  </div>
+              </div>
+            {% endfor %}
+          </div>
+      </div>
+  </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+      if (document.location.protocol === 'https:')
+        websocket_protocol = 'wss://';
+      else
+        websocket_protocol = 'ws://';
+
+      var socket_url = websocket_protocol + window.location.host + '/ws' + window.location.pathname;
+      var socket = new WebSocket(socket_url);
+
+      socket.onmessage = function(event){
+          let new_comment = JSON.parse(event.data)
+          $('.comments').prepend('<div class="media g-mb-30 media-comment"><img class="d-flex g-width-50 g-height-50 rounded-circle g-mt-3 g-mr-15" src="' + new_comment.user_image_url + '" alt="Image Description"><div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">'
+          + '<div class="g-mb-15">' + '<h5 class="h5 g-color-gray-dark-v1 mb-0">' + new_comment.user + '</h5>'
+          + '<span class="g-color-gray-dark-v4 g-font-size-12">'+ new_comment.post_date  + '</span></div>' + '<p>' + new_comment.comment_text + '</p>'+ '<div id="comment_like_section_'+ new_comment.id +'"><button type="submit" id="comment_like" name="comment_id" value="'+ new_comment.id +'" class="comment_like unliked"><i class="fa fa-thumbs-up g-pos-rel g-top-1 g-mr-3"></i><span id="comment_likes_count">0<span></button>' +'</div></div></div>')
+
+          $('#comments_count').text(parseInt($('#comments_count').text()) + 1)
+
+      };
+
+      socket.onopen = function(event)
+      {
+          var form = $("#comment")
+          form.submit(function(e){
+              e.preventDefault()
+              var comment_text = $('#id_text').val()
+              data = {
+                  'comment_text': comment_text,
+              }
+              socket.send(JSON.stringify(data))
+              $('#id_text').val('')
+          });
+
+          $('#id_text').keypress(function(e){
+              if (e.which == 13){
+                  $("#comment").submit();
+              }
+          });
+      };
+
+      socket.onclose= function(event){
+          console.log('Socket closed', event)
+      };
+
+      $(document).on('click', '.comment_like', function(event){
+          event.preventDefault();
+          var pk = $(this).attr('value');
+          $.ajax({
+            type: 'POST',
+            url: '{% url "blog:like_comment" %}',
+            data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+            dataType: 'json',
+            success: function(response){
+              if (response.status)
+              {
+                if (response.status == 'liked')
+                {
+                  diff = 1;
+                  $('#comment_like_section_' + pk + ' #comment_like').removeClass('unliked');
+                  $('#comment_like_section_' + pk + ' #comment_like').addClass('liked');
+
+                }
+
+                else if (response.status == 'unliked')
+                {
+                  diff = -1
+                  $('#comment_like_section_' + pk + ' #comment_like').removeClass('liked');
+                  $('#comment_like_section_' + pk + ' #comment_like').addClass('unliked');
+                }
+
+                $('#comment_like_section_' + pk + ' #comment_likes_count').text(parseInt($('#comment_like_section_' + pk + ' #comment_likes_count').text()) + diff)
+              }
+              else
+                alert('We know you like what you write.')
+            },
+          });
+      });
+
+      $(document).on('click', '#id_article', function(event){
+          event.preventDefault();
+          var pk = $(this).attr('value');
+
+          $.ajax({
+            type: 'POST',
+            url: '{% url "blog:like_article" %}',
+            data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+            dataType: 'json',
+            success: function(response){
+              if (response.status)
+              {
+                console.log(response)
+                if (response.status == 'liked')
+                {
+                  diff = 1;
+                  $('#id_article').removeClass('inactive');
+                  $('#id_article').addClass('active');
+
+                }
+
+                else if (response.status == 'unliked')
+                {
+                  diff = -1
+                  $('#id_article').removeClass('active');
+                  $('#id_article').addClass('inactive');
+                }
+                // $('#article_like_section_' + pk + ' #comment_likes_count').text(parseInt($('#comment_like_section_' + pk + ' #comment_likes_count').text()) + diff)
+              }
+              else
+              {
+                alert('We know you like what you write.')
+              }
+            },
+            error: function(rs, e){
+              console.log(rs.responseText);
+            }
+          });
+      });
+
+      $(document).on('click', '#id_bookmark', function(event){
+          event.preventDefault();
+          var pk = $(this).attr('value');
+
+          $.ajax({
+            type: 'POST',
+            url: '{% url "blog:add_bookmark" %}',
+            data: {'id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+            dataType: 'json',
+            success: function(response){
+              if (response.status == 'added')
+                {
+                  diff = 1;
+                  $('#id_bookmark').removeClass('inactive');
+                  $('#id_bookmark').addClass('active');
+
+                }
+
+                else if (response.status == 'removed')
+                {
+                  diff = -1
+                  $('#id_bookmark').removeClass('active');
+                  $('#id_bookmark').addClass('inactive');
+                }
+            },
+            error: function(rs, e){
+              console.log(rs.responseText);
+            }
+          });
+      });
+    })
+</script>
+
+{% endblock %}

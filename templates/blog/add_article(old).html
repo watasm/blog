@@ -1,0 +1,12 @@
+{% extends 'blog/base.html'%}
+{% block title %}Add article{% endblock %}
+
+{% block page %}
+  <br><br><br><br>
+  <a href="{% url 'blog:add_category'%}">+Add Category</a>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{article_form.as_p}}
+    <button type="submit">Add</button>
+  </form>
+{% endblock %}

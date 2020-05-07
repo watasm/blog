@@ -1,0 +1,149 @@
+{% extends "blog/base.html" %}
+{% load quiz_tags %}
+{% block title %}Quiz {% endblock %}
+{% block page %}
+<style>
+  .right{
+    color: green;
+  }
+  .wrong{
+    color: red;
+  }
+
+  .button {
+    margin-bottom: 5px;
+    /*display: block;*/
+  }
+</style>
+
+<div id="quiz">
+  <br><br><br>
+  {% if is_user_pass %}
+    <i>You already passed this quiz.</i>
+  {% endif %}
+  <div class="question">
+    <b id='question_text'></b>
+    <!-- <form method="post">
+    </form> -->
+    <form method="post">
+
+      <input class="btn button" type="button" name="" id="choice0" data-id="" value=""><br>
+      <input class="btn button" type="button" name="" id="choice1" data-id="" value=""><br>
+      <input class="btn button" type="button" name="" id="choice2" data-id="" value=""><br>
+      <input class="btn button" type="button" name="" id="choice3" data-id="" value=""><br>
+    </form>
+  </div>
+</div>
+
+
+<script>
+  $(document).ready(function(){
+    var question_order = 0;
+
+    function get_next_question()
+    {
+      $.ajax({
+        type: 'GET',
+        url: '{% url "get_next_question" %}',
+        data: {'quiz_id': '{{quiz.id}}', 'question_order': question_order, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+        dataType: 'json',
+        success: function(response)
+        {
+          if (!(response.is_quiz_end))
+          {
+            question_order = response.question_order;
+            $('#question_text').text(response.question);
+
+            for(let i=0; i < response.choices_count; i++)
+            {
+                // if question choices count not known
+
+                // choice_index = 'choice' + i.toString()
+                // $('<input>').attr({
+                //     class: "btn button",
+                //     type: "button",
+                //     id: choice_index,
+                //     name: response[choice_index].question_id,
+                //     value: response[choice_index].choice,
+                //     //data-id: response[choice_index].id,
+                // }).appendTo('form');
+                // $('#'+choice_index).attr('data-id', response[choice_index].id);
+
+              choice_index = 'choice' + i.toString();
+              $('#choice'+i).attr('value', response[choice_index].choice);
+              $('#'+choice_index).attr('data-id', response[choice_index].id);
+              $('#choice'+i).attr('name', response[choice_index].question_id);
+            }
+          }
+        },
+      });
+    }
+
+
+    get_next_question();
+
+    let right_answer_count = 0;
+    console.log(right_answer_count);
+
+    $(document).on('click', '.button', function(event){
+        event.preventDefault();
+        let question_id = $(this).attr('name');
+        let id = $(this).attr('data-id');
+
+        // disable question choices
+        $("input[name=" + question_id + "]").prop('disabled', true);
+
+        $.ajax({
+          type: 'POST',
+          url: '{% url "recive_user_answer" %}',
+          data: {'quiz_id': '{{quiz.id}}', 'question_id': question_id, 'id': id, 'csrfmiddlewaretoken': '{{csrf_token|escapejs}}'},
+          dataType: 'json',
+          success: function(response)
+          {
+
+            $("input[data-id=" + response.right_choice_id + "]").addClass("right");
+            if (response.is_right)
+              right_answer_count += 1;
+            else
+              $("input[data-id=" + id + "]").addClass("wrong");
+
+
+            setTimeout(function(){
+              $("input[data-id=" + response.right_choice_id + "]").removeClass("right");
+              $("input[data-id=" + id + "]").removeClass("wrong");
+              $("input[name=" + question_id + "]").prop('disabled', false);
+            }, 1000);
+
+            if (response.is_last_question)
+            {
+              setTimeout(function(){
+                if (right_answer_count == question_order)
+                {
+                  alert('You passed the quiz.');
+                  $.ajax({
+                    type: 'POST',
+                    url: '{% url "add_quiz_to_profile" %}',
+                    data: {'session_key': '{{request.session.session_key|escapejs}}', 'quiz_id': '{{quiz.id|escapejs}}', 'csrfmiddlewaretoken': '{{csrf_token|escapejs}}'},
+                    dataType: 'json',
+                    success: function(response)
+                    {
+                      console.log(response)
+                    }
+                  });
+                }
+
+                else
+                  alert('You don\'t passed the quiz.');
+              }, 1000)
+
+              setTimeout(function(){$('#quiz').remove();}, 1000);
+            }
+            else
+              setTimeout(get_next_question, 1000);
+          },
+        });
+    });
+  });
+
+</script>
+{% endblock %}

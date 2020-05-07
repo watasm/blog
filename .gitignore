@@ -1,0 +1,7 @@
+config/
+ssl/
+log/
+*.sock
+*.sock.lock
+*.pid
+celerybeat-schedule

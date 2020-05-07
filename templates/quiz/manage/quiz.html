@@ -1,0 +1,92 @@
+{% extends "blog/base.html" %}
+{% load static %}
+{% block title %}
+  {% if object %}
+    Edit {{object.quiz.title}} Quiz {{object.id}}
+  {% else %}
+    Add a new quiz
+  {% endif %}
+{% endblock %}
+
+
+
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'quiz/css/editquizz.css' %}">
+{% endblock %}
+
+{% block page %}
+  <br>
+        <div class="container" style="background: #353b48;padding:0 0 30px 0">
+            <div class="body" style="background: #353b48;">
+                <h4 style="padding-bottom: 20px;">{% if object %}Edit "{{object.title}}"{% else %}Create{% endif %}  Quiz</h4>
+                <form method="post">
+                  {{form.errors}}
+                  {% csrf_token %}
+                  <div class="title card" style="margin-bottom: 50px;padding: 25px;background: rgb(219, 219, 219);">
+                      <div class="input-group" style="display: block;">
+                          <h6>1.Edit Title</h6>
+                          <div class="form-group">
+                              <input type="text" id="{{form.title.id_for_label}}" maxlength="{{form.title.field.maxlength}}" name="{{form.title.html_name}}" value="{% if form.title.value%}{{form.title.value}}{% endif %}"class="form-control" placeholder="Quizz Title" required="">
+                          </div>
+                      </div>
+                  </div>
+                  <div class="card category" style="margin-bottom: 50px;padding: 25px;background: rgb(219, 219, 219);">
+                      <h6>2.Edit Category</h6>
+
+                      <select name={{form.category.html_name}} id="{{form.category.id_for_label}}" class="custom-select">
+                        {% with selected_category=form.category.value %}
+                          {% if not selected_category %}
+                            <option disabled="disabled" selected="selected">--- Select category ---</option>
+                          {% endif %}
+
+                          {% for category in form.category.field.queryset %}
+                              <option value="{{ category.id }}"{% if selected_category == category %} selected {% endif %}>{{ category.name }}</option>
+                          {% endfor %}
+                        {% endwith %}
+                      </select>
+                  </div>
+                  <div class="title card" style="margin-bottom: 50px;padding: 25px;background: rgb(219, 219, 219);">
+                      <div class="input-group" style="display: block;">
+                          <h6>3.Edit Description</h6>
+                          <div class="form-group">
+                            <textarea class="form-control" name="{{form.description.html_name}}" cols="80" rows="7" id="{{form.description.id_for_label}}" placeholder="Quiz description" required>{% if form.description.value %}{{form.description.value}}{% endif %}</textarea>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="card addimg" style="background: rgb(219, 219, 219);max-width:100%;padding: 20px;">
+                      <label for="exampleFormControlInput1"><h6>4. Edit Image</h6></label>
+                      <div id="msg"></div>
+
+                          <input type="file" name="img[]" class="file" accept="image/*">
+                          <div class="input-group my-3">
+                              <input type="text" class="form-control" style="background:white ;" disabled placeholder="Upload File" id="file">
+                              <div class="input-group-append">
+                                  <button type="button" class="browse btn btn-primary">Add image</button>
+                              </div>
+                          </div>
+
+                  </div>
+                  {% if object %}
+                    <h4 style="padding: 20px 0 20px 0">Edit Questions</h4>
+                    <div class="card quession" style="background:rgb(219, 219, 219);padding: 25px ; margin-top:20px;">
+                        {% for question in object.questions.all%}
+                          <a href="{% url 'quiz_questions_update' object.id question.id %}">Edit question {{question.order}}</a>
+                        {% empty %}
+                          <p>No questions yet</p>
+                        {% endfor %}
+                        <a href='{% url "quiz_questions_create" object.id %}' class="button">Create new question</a>
+                    </div>
+                  {% endif %}
+
+
+                  <div class="card" style="margin-top: 50px;background: rgb(219, 219, 219);">
+                      <button type='submit' class="btn btn-secondary">Save question</button>
+                  </div>
+
+                </form>
+            </div>
+        </div>
+
+<br>
+{% endblock %}

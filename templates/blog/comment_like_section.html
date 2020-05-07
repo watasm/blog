@@ -1,0 +1,15 @@
+{% if request.user.is_authenticated %}
+    <form action="{% url 'blog:like_comment' %}" method="post">
+    {% csrf_token %}
+    {% if request.user in comment.comment_likes.all %}
+        <button type="submit" id = "comment_like" name="comment_id" value = "{{comment.pk}}" class="u-link-v5 g-color-black-dark-v4 g-color-primary--hover  comment_like">
+            <i class="fa fa-thumbs-up g-pos-rel g-top-1 g-mr-3"></i> {% if comment.likes_count%}{{comment.likes_count}}{% else %}{{likes_count}}{% endif %}
+        </button>
+    {% else %}
+        <button type="submit" id = "comment_like" name="comment_id" value = "{{comment.pk}}" class="u-link-v5 g-color-gray-dark-v4 g-color-primary--hover  comment_like">
+            <i class="fa fa-thumbs-up g-pos-rel g-top-1 g-mr-3"></i> {% if comment.likes_count%}{{comment.likes_count}}{% else %}{{likes_count}}{% endif %}
+        </button>
+    {% endif %}
+    </form>
+{% endif %}
+

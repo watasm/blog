@@ -1,0 +1,48 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+channels = "*"
+channels-redis = "*"
+Pillow = "*"
+django-summernote = "*"
+django-allauth = "*"
+django-taggit = "*"
+redis = "*"
+uWSGI = "*"
+celery = "*"
+django-celery-email = "*"
+supervisor = "*"
+python-memcached = "*"
+django-memcache-status = "*"
+pip = "*"
+instructions = "*"
+django-notifications-hq = "*"
+django-debug-toolbar = "*"
+djangorestframework = "*"
+pytz = "*"
+django-tz-detect = "*"
+django-online-users = "*"
+faker = "*"
+django-taggit-serializer = "*"
+gevent = "*"
+psycogreen = "*"
+django-db-connection-pool = "*"
+django-mysql-geventpool = "*"
+greenlet = "*"
+django-elasticsearch-dsl = "*"
+six = "*"
+psycopg2-binary = "*"
+daphne = "*"
+
+[requires]
+python_version = "3.6"
+
+[packages.gunicorn]
+extras = [ "gevent",]
+version = "*"

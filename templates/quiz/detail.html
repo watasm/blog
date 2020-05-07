@@ -1,0 +1,20 @@
+{% extends "blog/base.html" %}
+{% block title %}Quizzes{% endblock %}
+{% block page %}
+  <br><br><br><br>
+  <h1>{{object.title}}</h1>
+  <p>{{object.description}}</p>
+  <p><a href='{% url "quiz_update" object.id %}' class="button">Edit quiz</a></p>
+  {% with questions=object.questions.all %}
+    {% for question in questions%}
+      <li><a href="{% url 'quiz_questions_update' object.id question.id %}">Edit question {{question.order}}</a></li>
+    {% empty %}
+      <p>No questions yet</p>
+    {% endfor %}
+
+    <p><a href='{% url "quiz_questions_create" object.id %}' class="button">Create new question</a></p>
+    {% if questions %}
+      <p><a href='{% url "take_quiz" object.id %}' class="button">Start quiz</a></p>
+    {% endif %}
+  {% endwith %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% if user.is_authenticated %}
+  <span>Total Friends - </span><span class = 'number_of_friends'>{{number_of_friends}}</span>
+  {% if not request.user == user %}
+    <form action="{% url 'add_to_friends' %}" method="post">
+      {% csrf_token %}
+      {% if contact_status == 'F' %}
+        <button type="submit" id = "friend_id" name='remove_from_friends' value="{{ user.id }}" class = 'btn btn-danger'>Remove from friends</button>
+
+      {% elif contact_status == 'PF' %}
+        {% if request.user.id > user.id %}
+          <button type="submit" id = "friend_id" name='accept_request' value="{{ user.id }}" class = 'btn btn-info'>Accept request</button>
+        {% endif %}
+        <button type="submit" id = "friend_id" name='cancel_request' value="{{ user.id }}" class = 'btn btn-danger'>Cancel request</button>
+      {% elif contact_status == 'PS' %}
+        {% if user.id > request.user.id %}
+          <button type="submit" id = "friend_id" name='accept_request' value="{{ user.id }}" class = 'btn btn-info'>Accept request</button>
+        {% endif %}
+        <button type="submit" id = "friend_id" name='cancel_request' value="{{ user.id }}" class = 'btn btn-danger'>Cancel request</button>
+      {% else %}
+        <button type="submit" id = "friend_id" name='add_to_friends' value="{{ user.id }}" class = 'btn btn-success'>Add to friends</button>
+      {% endif %}
+    </form>
+  {% endif %}
+{% endif %}

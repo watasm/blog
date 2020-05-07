@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+{% load static %}
+{% load notifications_tags %}
+{% load socialaccount %}
+{% load blog_tags %}
+{% load tz %}
+{% load tz_detect %}
+{% tz_detect %}
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{% endblock title %}</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script> -->
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <link type="text/css" rel="stylesheet" href="{% static 'blog/css/style.css'%}" >
+        <link type="text/css" rel="stylesheet" href="{% static 'blog/css/hover-box.css' %}">
+        {% block css %}
+
+        {% endblock %}
+
+        <link type="image/ico" rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css">
+
+        <script type="text/javascript" src="{% static 'blog/js/bootstrap-multiselect.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'blog/css/bootstrap-multiselect.css' %}" type="text/css"/>
+
+    </head>
+    <body>
+        <header class="header_md">
+            <nav style='background-color: #0e1823' class="navbar navbar-expand-md navbar-dark">
+                <div class="container">
+                    <a class='navbar-brand ' href="{% url 'blog:article_list'%}"><h3>LOGO</h3></a>
+                    <div class='collapse navbar-collapse'>
+                        <ul class='navbar-nav ml-auto'>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <div class="container h-100">
+                                    <div class="d-flex justify-content-center
+                                        h-100">
+                                        <div class="searchbar">
+
+                                          <form id="serach_form" class="searchbox" action='{% url "blog:elasticsearch_results" %}' method="get">
+                                            <input class="search_input" type="text" name="q" placeholder="Search.." required>
+
+                                            <a href="#" class="search_icon" onclick="document.getElementById('serach_form').submit();">
+                                            <i class="fas fa-search"></i>
+                                            </a>
+                                          </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% if request.user.is_authenticated %}
+                                <div class="dropdown">
+                                  <button class="btn btn-success" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    {{ request.user.username }}
+                                  </button>
+                                  <div class="dropdown-menu" aria-labelledby="userMenu">
+                                    <a class="dropdown-item" href="{% url 'profile' request.user.id %}">My Profile</a>
+                                    <a class="dropdown-item" href="{% url 'account_change_password'%}">Change password</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{% url 'account_logout' %}">Log Out</a>
+                                  </div>
+                                </div>
+                                <div class="dropdown notifications">
+                                  <button class="btn btn-primary" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Notifications <span class="badge badge-light">{% live_notify_badge %}</span>
+                                  </button>
+                                    <ul class="dropdown-menu" id="notice-link">
+                                       {% live_notify_list %}
+                                       <li style='text-align: center'><a href="{% url 'notifications:all' %}">All notifications</a></li>
+                                       <li style='text-align: center'><a href="{% url 'notifications:unread' %}">All unread notifications</a></li>
+                                       <li style='text-align: center'><a id='close_all' href="javascript:void(0)">Mark all as read</a></li>
+                                    </ul>
+                                </div>
+                            {% else %}
+                               <li class='navbar-item margin-right-for-navbar-li'>
+                                 <a class="nav-link" >
+                                     <button type="button" class="btn btn-primary
+                                         btn_class" data-toggle="modal" data-target="#exampleModalCenter">SIGN IN </button>
+                                 </a>
+                               </li>
+                               <li class='navbar-item margin-right-for-navbar-li'>
+                                 <a class="nav-link" >
+                                     <button type="button" class="btn
+                                         btn-secondary btn_class"data-toggle="modal" data-target="#exampleModalEnd" >SIGN UP </button>
+                                 </a>
+                               </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                    <div class="modal-body">
+                    </div>
+                    <div class="container">
+                        <div class="d-flex justify-content-center h-100">
+                            <div class="card-card">
+                                <div class="card-header">
+                                    <h3>LOGIN</h3>
+                                    <div class="d-flex justify-content-end social_icon">
+                                        <span class="icon-fb"><i class="fab fa-facebook-square"></i></span>
+                                        <span class="icon-goog"><i class="fab fa-google-plus-square"></i></span>
+                                        <span class="icon-twit"><i class="fab fa-twitter-square"></i></span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" id="login_form" enctype="application/x-www-form-urlencoded">
+                                      {% csrf_token %}
+                                        <div class="input-group form-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                            </div>
+                                            <input id="username" type="text" class="form-control" placeholder="Username" required>
+
+                                        </div>
+                                        <div class="input-group form-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                            </div>
+                                            <input id="password" type="password" class="form-control" placeholder="Password" required>
+                                        </div>
+                                        <div class="row align-items-center remember">
+                                            <input id="stay_logged_in" type="checkbox">Remember Me
+                                        </div>
+                                        <div class="form-group">
+                                            <input type="submit" value="Login" class="btn float-right login_btn">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="card-footer">
+
+                                    <div class="d-flex justify-content-center links mt-3">
+                                        Don't have an account?<a href="#">Sign Up</a>
+                                    </div>
+                                    <div class="d-flex justify-content-center">
+                                        <a href="#">Forgot your password?</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal fade" id="exampleModalEnd" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                      <div class="modal-content">
+                        <div class="container">
+                            <div class="sign-up d-flex justify-content-center h-100">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3>Sign Up</h3>
+
+                                    </div>
+                                    <div class="card-body">
+                                        <form method="POST" id="signup_form" enctype='multipart/form-data'>
+                                          {% csrf_token %}
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                </div>
+                                                <input id="id_first_name" type="text" class="form-control" placeholder="First Name" required>
+
+                                            </div>
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                </div>
+                                                <input id="id_last_name" type="text" class="form-control" placeholder="Last Name" required>
+
+                                            </div>
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                </div>
+                                                <input id="id_username" type="text" class="form-control" placeholder="Username" required>
+
+                                            </div>
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                </div>
+                                                <input id="id_email" type="email" class="form-control" placeholder="Email" required>
+
+                                            </div>
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input id="id_password" type="password" class="form-control" placeholder="Password" required>
+                                            </div>
+                                            <div class="input-group form-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text"><i class="fas fa-key"></i></span>
+                                                </div>
+                                                <input id="id_confirm_password" type="password" class="form-control" placeholder="Confirm Password" required>
+                                            </div>
+
+
+                                    </div>
+                                    <div class="card-footer">
+                                                {% get_preferences %}
+                                                <div class="custom-file" id="customFile" lang="es">
+                                                        <input id="id_user_image" type="file" class="custom-file-input" accept="image/*" aria-describedby="fileHelp">
+                                                        <label class="custom-file-label" for="id_user_image">
+                                                           Select file...
+                                                        </label>
+                                                    <div class="form-check">
+                                                            <input id="id_is_subscribe" type="checkbox" class="form-check-input" >
+                                                            <label class="form-check-label ">Subcscribe to the newsletter</label>
+                                                          </div>
+                                                          <div>
+                                                            <button type="submit" class="btn btn-block btn-reg" > Sign Up </button>
+                                                          </div>
+
+                                    </div>
+                                </div></form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                </div>
+            <nav class="site-header sticky-top bg-secondary header_link" id='navbarResponsive' >
+                <div class="container d-flex flex-column flex-md-row
+                    justify-content-between" id='navbarResponsive'>
+                    <a class="py-2 d-none d-md-inline-block" href="{% url 'blog:article_list'%}">
+                        <i class="fas fa-home"></i>HOME
+                    </a>
+                    <a href="{% url 'blog:add_article'%}" class="py-2 d-none d-md-inline-block" href="#">+ADD
+                        ARTICLE</a>
+                    <a class="py-2 d-none d-md-inline-block" href="{% url 'users'%}">USERS</a>
+                    <a class="py-2 d-none d-md-inline-block" href="{% url 'chat:chat_list' %}">CHAT</a>
+                    <a class="py-2 d-none d-md-inline-block" href="{% url 'quiz_list' %}">QUIZZES</a>
+                </div>
+            </nav>
+        </header>
+        <div class="header_mobile">
+            <nav style='background-color: #0e1823' class="navbar navbar-dark" >
+                <div class="container">
+                    <a class='navbar-brand ' href="{% url 'blog:article_list'%}"><h3>LOGO</h3></a>
+                    <div>
+                        <button class="navbar-toggler" type="button"
+                        data-toggle="collapse" data-target="#navbarSearch">
+                        <i class="fas
+                        fa-search" style="color: white;"></i>
+                        </button>
+                    </div>
+                    <button class="navbar-toggler" type="button"
+                        data-toggle="collapse" data-target="#navbarResponsiv">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class='collapse navbar-collapse' id='navbarResponsiv'>
+                        <ul class='navbar-nav ml-auto'>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <a class="nav-link" href="{% url 'blog:add_article'%}">+ADD ARTICLE</a>
+                            </li>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <a class="nav-link" href="{% url 'users'%}">USERS</a>
+                            </li>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <a class="nav-link" href="{% url 'chat:chat_list' %}">CHAT</a>
+                            </li>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <a class="nav-link" href="{% url 'quiz_list' %}">QUIZZES</a>
+                            </li>
+                            <li class='navbar-item margin-right-for-navbar-li'>
+                                <a class="nav-link" href="login.html" >Login</a>
+                            </li>
+                            <li class='navbar-item'>
+                                <a class="nav-link" href="sign_up.html">Sign Up</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+            <div class='collapse' id="navbarSearch">
+              <form id="serach_form" class="searchbox" action='{% url "blog:elasticsearch_results" %}' method="get">
+                <div class="search__container">
+                    <input class="search__input" type="text" name="q" placeholder="Search" id="exampleInputName" required>
+                </div>
+              </form>
+            </div>
+        </div>
+        <div id="mySidenav" class="sidenav">
+            <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            <a href="#">IT</a>
+            <a href="#">Physics</a>
+            <a href="#">WEB</a>
+            <a href="#">Mathematics</a>
+        </div>
+        <span onclick="openNav()" id="categoryButton">
+            <p class="categor_mob"> <i class="fas fa-grip-horizontal"></i>Categories</p>
+        </span>
+        {% block page %}
+        {% endblock %}
+
+            <footer class="col-xs-12">
+                <div class="col-lg-8 col-md-10 mx-auto">
+                    <ul class="list-inline text-center">
+                        <li class="list-inline-item">
+                            <a href="#">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fas fa-circle fa-stack-2x"></i>
+                                    <i class="fab fa-twitter fa-stack-1x
+                                        fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fas fa-circle fa-stack-2x"></i>
+                                    <i class="fab fa-facebook-f fa-stack-1x
+                                        fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#">
+                                <span class="fa-stack fa-lg">
+                                    <i class="fas fa-circle fa-stack-2x"></i>
+                                    <i class="fab fa-github fa-stack-1x
+                                        fa-inverse"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="copyright text-muted text-center">Copyright © Your Website 2019</p>
+                </div>
+            </footer>
+
+            <script>
+            jQuery.ajaxSettings.traditional = true;
+                $(document).on('submit', '#login_form',function(event){
+                  event.preventDefault();
+
+                    $.ajax({
+                        type:'post',
+                        url:'{% url "account_login" %}',
+                        data:{
+                            'csrfmiddlewaretoken': '{{csrf_token}}',
+                            'login':$('#username').val(),
+                            'password':$('#password').val(),
+                            'remember': $('#stay_logged_in')[0].value,
+
+                        },
+
+                        statusCode: {
+                            200: function(responseObject, textStatus, jqXHR) {
+                              $("#login_form_errors").remove();
+                              setTimeout(function() {$("#login_form").prepend('<div style="text-align:center" class="alert alert-success" role="alert">Success</div>');}, 5);
+                              location.reload();
+                            },
+
+                            400: function(responseObject, textStatus, jqXHR) {
+                              $("#login_form_errors").remove();
+                              setTimeout(function() {$("#login_form").prepend('<div id="login_form_errors" class="alert alert-danger" role="alert">' + responseObject.responseJSON.form.errors + '</div>');}, 5);
+                            }
+                        }
+                    });
+                });
+
+
+                $(document).on('submit', '#signup_form',function(event){
+                  var image = null;
+                  var file    = document.querySelector('input[type=file]').files[0];
+                  var reader  = new FileReader();
+
+                  reader.addEventListener("load", function () {
+                      image = reader.result;
+
+                  }, false);
+
+                  if (file) {
+                    reader.readAsDataURL(file);
+                  }
+                  event.preventDefault();
+                    setTimeout(function() {
+                      $.ajax({
+                          type:'POST',
+                          url:'{% url "account_signup" %}',
+                          data:{
+                              'csrfmiddlewaretoken':'{{csrf_token}}',
+                              'first_name':$('#id_first_name').val(),
+                              'last_name':$('#id_last_name').val(),
+                              'username':$('#id_username').val(),
+                              'email':$('#id_email').val(),
+                              'password1':$('#id_password').val(),
+                              'password2':$('#id_confirm_password').val(),
+                              'preferences': $('#id_preferences').val(),
+                              'is_subscribed_to_the_newsletter': $('#id_is_subscribe').val(),
+                              'image':image
+
+                          },
+                          success: function(response) {
+                            if (response.status_code == 201)
+                            {
+                              window.location.replace(response.success_url);
+                            }
+                            else
+                            {
+                              $("#signup_form_errors").remove();
+                              for (i in response.form_errors) {
+                                $("#signup_form").prepend('<div style="font-size:12px" id="login_form_errors" class="alert alert-danger" role="alert">' + response.form_errors[i] + '</div>')
+                              }
+                              for (i in response.profile_form_errors) {
+                                $("#signup_form").prepend('<div style="font-size:12px" id="login_form_errors" class="alert alert-danger" role="alert">' + i + ':' + response.profile_form_errors[i] + '</div>')
+                              }
+
+                            }
+
+                          }
+
+                      });
+                    }, 50);
+
+
+                });
+
+                    function openNav()
+                    {
+                        document.getElementById("mySidenav").style.width = "100%";
+                    }
+                    function closeNav()
+                    {
+                        document.getElementById("mySidenav").style.width = "0";
+                    }
+                    var windowHeight = window.innerHeight
+                    document.getElementById("categoryButton").style.top = windowHeight/2+"px"
+
+                    window.onscroll = function() {myFunction()};
+
+var header = document.getElementById("navbarResponsive");
+var sticky = header.offsetTop;
+function myFunction() {
+  if (window.pageYOffset > sticky) {
+    header.classList.add("sticky");
+
+  } else {
+    header.classList.remove("sticky");
+  }
+}
+$(document).ready(function() {
+        $('#id_preferences').multiselect();
+    });
+
+                </script>
+        </body>
+    </html>

@@ -1,0 +1,18 @@
+{% extends 'blog/base.html'%}
+
+{% block page %}
+<br><br><br><br>
+<form id='create_group_form' method="post">
+  {% csrf_token %}
+  {{group_create_form}}
+  <input type="submit" id="create_group" value="Create group">
+</form>
+
+<script>
+  $(document).ready(function () {
+    $("#create_group_form").submit(function (e) {
+        $("#create_group").attr("disabled", true);
+    });
+});
+</script>
+{% endblock %}

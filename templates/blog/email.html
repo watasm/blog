@@ -1,0 +1,9 @@
+<html>
+<body>
+  <p>New articles on the following categories.</p>
+  {% for category in user_categories %}
+    <a href = "{{domain}}{{category.get_absolute_url}}">{{category.name}}<br></a>
+  {% endfor %}
+  </body>
+  <a href="{{domain}}{% url 'unsubscribe_from_newsletter' %}">Unsubscribe from newsletter</a>
+</html>

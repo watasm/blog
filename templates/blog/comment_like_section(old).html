@@ -1,0 +1,11 @@
+{% if request.user.is_authenticated %}
+<form action="{% url 'blog:like_comment' %}" method="post">
+  {% csrf_token %}
+  {% if request.user in comment.comment_likes.all %}
+    <button type="submit" id = "comment_like" name="comment_id" value = "{{comment.pk}}" class = 'btn btn-danger'>Dislike - <span>{{comment.total_likes}}</span></button>
+  {% else %}
+    <button type="submit" id = "comment_like" name="comment_id" value = "{{comment.pk}}" class = 'btn btn-primary'>Like - <span>{{comment.total_likes}}</span></button>
+  {% endif %}
+</form>
+{% endif %}
+

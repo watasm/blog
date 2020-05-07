@@ -1,0 +1,72 @@
+{% extends "blog/base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if object %}
+    Edit {{object.quiz.title}} question {{object.id}}
+  {% else %}
+    Add a new question
+  {% endif %}
+{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'quiz/css/edit.css' %}">
+{% endblock %}
+
+{% block page %}
+  <br>
+  <div class="container cont" style="background: #353b48;;">
+    <div style="text-align: center; display: contents; justify-content: center;">
+      <div class="quessionedit">
+        <div class="heading">
+            <h4 style="color: aliceblue;">{% if object %}Edit "{{ object.quiz.title }}" question {{object.order}} {% else %}Create question{% endif %} </h4>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="body" style="padding-bottom: 25px;">
+            <div class="input-group card" style="margin-bottom: 50px;background: rgb(219, 219, 219);">
+                <div class="form-group">
+                  <textarea class="form-control" name="question" cols="80" rows="5" required="" id="id_question" placeholder="Question">{% if form.question.value %}{{form.question.value}}{% endif %}</textarea>
+                </div>
+            </div>
+
+            <div class="choos" style=" color: aliceblue;background: #353b48;">
+              <h4>Choices</h4>
+            </div>
+            <div class="card" style="justify-content: center; display: block;background: rgb(219, 219, 219);">
+              {{ question_choices_formset.management_form }}
+              {% for form in question_choices_formset %}
+                {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
+                  <div class="check">
+                    <label class="label">
+                        {{form.DELETE}}
+                        <input class="label__checkbox" type="checkbox" id="{{form.is_right_choice.id_for_label}}" name="{{form.is_right_choice.html_name}}" {% if form.is_right_choice.value %}checked{% endif %}>
+                        <span class="label__text">
+                          <span class="label__check">
+                            <i class="fa fa-check icon"></i>
+                          </span>
+                        </span>
+                      </label>
+                      <div class="text">
+                        <input type="text" class="form-control" placeholder="Answer" maxlength="{{form.choice.field.max_length}}" id="{{form.choice.id_for_label}}" name="{{form.choice.html_name}}" {% if form.choice.value %}value="{{form.choice.value}}"{% endif %}>
+                      </div>
+                  </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 50px;background: rgb(219, 219, 219);">
+              <button type='submit' class="btn btn-secondary">Save question</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+<br>
+{% endblock %}

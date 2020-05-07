@@ -1,0 +1,14 @@
+{% extends 'blog/base.html'%}
+
+{% block page %}
+<br><br><br><br>
+{% if num_of_candidates %}
+  <form method="post">
+    {% csrf_token %}
+    {{form}}
+    <input type="submit" name="" value="Add to group">
+  </form>
+{% else %}
+  <p>All your friends in the group.</p>
+{% endif %}
+{% endblock %}

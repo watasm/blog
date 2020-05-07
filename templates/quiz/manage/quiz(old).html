@@ -1,0 +1,16 @@
+{% extends "blog/base.html" %}
+{% block title %}
+  {% if object %}
+    Edit {{object.quiz.title}} question {{object.id}}
+  {% else %}
+    Add a new question
+  {% endif %}
+{% endblock %}
+
+{% block page %}
+
+  <form action="" method="post">{% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Save" />
+  </form>
+{% endblock %}

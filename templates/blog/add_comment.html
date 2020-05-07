@@ -1,0 +1,14 @@
+{% extends 'blog/base.html'%}
+
+{% block page %}
+  {% if request.user.is_authenticated %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{comment_form.as_p}}
+        <button type="submit">Add</button>
+    </form>
+  {% else %}
+    <p>Please login</p>
+    <p><a href="{% url 'account_login'%}">Login</a></p>
+  {% endif %}
+{% endblock %}

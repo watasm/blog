@@ -1,0 +1,233 @@
+{% extends 'blog/base.html' %}
+{% block title %}{{quiz.title}}{% endblock %}
+{% load static %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'quiz/css/quizstart.css' %}">
+{% endblock %}
+
+{% block page %}
+  <div class="all">
+    <div class="container">
+      <div class="row">
+          <div class="col-md-12 col-sm-12 col-lg-6">
+              <div class="card" id='div_for_quiz'>
+                  <h3 id='title_or_question'>{{quiz.title}}</h3>
+                  <hr>
+                  <div id='quiz_description' class="container-fluid">
+                    <p>{{quiz.description}}</p>
+                  </div>
+                  <form style='display:none' id="question_form" method="post">
+                    <div class="container-fluid">
+                        {% csrf_token %}
+                        <div class="custom-control custom-radio">
+                            <input data-id='' type="radio" id="choice0_input" name="customRadio" class="custom-control-input choices">
+                            <label id='choice0' class="custom-control-label" for="choice0_input" style="font-family: Times New Roman, Times, serif;"></label>
+                        </div>
+                        <hr>
+                        <div class="custom-control custom-radio">
+                            <input data-id='' type="radio" id="choice1_input" name="customRadio" class="custom-control-input choices">
+                            <label id='choice1' class="custom-control-label" for="choice1_input" style="font-family: Times New Roman, Times, serif;"></label>
+                        </div>
+                        <hr>
+                        <div class="custom-control custom-radio">
+                            <input data-id='' type="radio" id="choice2_input" name="customRadio" class="custom-control-input choices">
+                            <label id='choice2' class="custom-control-label" for="choice2_input" style="font-family: Times New Roman, Times, serif;"></label>
+                        </div>
+                        <hr>
+                        <div class="custom-control custom-radio">
+                            <input data-id='' type="radio" id="choice3_input" name="customRadio" class="custom-control-input choices">
+                            <label id='choice3' class="custom-control-label" for="choice3_input" style="font-family: Times New Roman, Times, serif;"></label>
+                        </div>
+                    </div>
+                  </form>
+
+                  <br>
+                  <div class="down">
+                      <div class="but">
+                          <button style='display:none' id='back' type="submit" class="btn btn-primary">BACK</button>
+                          <button id='next' type="submit" class="btn btn-primary">NEXT</button>
+                      </div>
+                      <h3><span id='step'></span> / <span id='questions_count'></span></h3>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.sessionStorage.clear()
+    function shuffle(arr) {
+      for(let j, x, i = arr.length; i; j = parseInt(Math.random() * i), x = arr[--i], arr[i] = arr[j], arr[j] = x);
+      return arr;
+    }
+
+    let question_id = null;
+    let question_data;
+    let question_ids = new Array() // for step
+
+    {% for question in quiz.questions.all %}
+      question_ids['{{forloop.counter0}}'] = '{{question.id}}';
+      question_id = '{{question.id}}';
+      question_data = {};
+      question_data['question'] = '{{question.question}}';
+      question_data['user_choice'] = null;
+      question_data['choices'] = new Array(4);
+      {% for choice in question.choices.all %}
+        question_data['choices']['{{forloop.counter0}}'] = '{{choice.id}}:{{choice.choice}}';
+      {% endfor %}
+      shuffle(question_data['choices'])
+      window.sessionStorage.setItem(question_id, JSON.stringify(question_data))
+    {% endfor %}
+    $('#questions_count').text(question_ids.length);
+  </script>
+
+  <script>
+    let step = 0;
+    let question = "";
+    let user_choices = []
+    $('#step').text(step);
+
+    function refresh_form(step)
+    {
+      if (step >= 0 && step < question_ids.length)
+      {
+        question_data = JSON.parse(window.sessionStorage.getItem(question_ids[step]));
+        $('#title_or_question').text(question_data['question']);
+        for(let i = 0; i < question_data.choices.length; i++)
+        {
+          let temp = question_data['choices'][i].split(":");
+          choice_index = 'choice' + i.toString();
+          $('#choice'+i+'_input').attr('data-id', temp[0]);
+          $('#choice'+i).text(temp[1]);
+        }
+        if (question_data['user_choice'])
+          $("[data-id="+ question_data['user_choice']+"]").prop("checked", true);
+      }
+    }
+
+    function get_user_choices()
+    {
+      // now user_choice contains only one answer, because question has only one correct answer
+      let user_choices = []
+      let els = $('.custom-control-input');
+      for (let i = 0; i < els.length; i++)
+      {
+        if (els[i].checked)
+        {
+          user_choices.push($(els[i]).attr('data-id'));
+          $(els[i]).prop("checked", false)
+        }
+      }
+      return user_choices;
+    }
+
+    document.getElementById("back").addEventListener("click", function(event){
+      event.preventDefault()
+      step -= 1;
+
+      if (step == 0)
+      {
+        $('#question_form').css("display", "none");
+        $('#quiz_description').css("display", "block");
+        $('#back').css("display", "none");
+        $('#title_or_question').text('{{quiz.title}}');
+      }
+      else if (step > 0 && step <= question_ids.length)
+        refresh_form(step-1);
+      $('#step').text(step);
+    });
+
+    document.getElementById("next").addEventListener("click", function(event){
+      event.preventDefault()
+
+      if ($(".choices:checked").length > 0 || step == 0)
+      {
+        if (step == 0)
+        {
+          $('#question_form').css("display", "flex");
+          $('#quiz_description').css("display", "none");
+          $('#back').css("display", "inline-block");
+        }
+
+        else
+        {
+          user_choices = get_user_choices();
+          if (!user_choices) return null;
+          // save user_choice to the sessionStorage
+          question_data = JSON.parse(window.sessionStorage.getItem(question_ids[step-1]))
+          question_data['user_choice'] = user_choices[0]
+          window.sessionStorage.setItem(question_ids[step-1], JSON.stringify(question_data))
+
+          if (step==question_ids.length)
+          {
+            let user_choices = []
+            for(let i = 0; i < question_ids.length; i++)
+            {
+              temp = JSON.parse(window.sessionStorage.getItem(question_ids[i]));
+              user_choices.push(temp['user_choice']);
+            }
+
+            $.ajax({
+                type:'post',
+                url:'{% url "check_and_display_user_answers" %}',
+                data:{
+                    'csrfmiddlewaretoken': '{{csrf_token}}',
+                    'quiz_id': {{quiz.id}},
+                    'user_choices': user_choices
+                },
+
+                success: function(response) {
+                  if (response.status_code == 201)
+                  {
+                    let right_answers_count = 0;
+
+                    for (x in response.answers_bit_vector)
+                      if (response.answers_bit_vector[x] == 1)
+                        right_answers_count += 1
+
+
+                    percent_of_right_answers = (right_answers_count / response.answers_bit_vector.length) * 100
+
+                    $('#div_for_quiz').empty()
+                    $('#div_for_quiz').append('<div id="results" class="card d-block " style="padding: 20px;"></div>')
+                    $('#results').append('<div class="trueorfalse d-flex justify-content-center"> <h4 style="color:#155724;"><i class="far fa-smile"></i>True</h4> <h4> / </h4><h4 style="color:#721c24 ;"><i class="far fa-frown-open"></i>False</h4> </div>')
+                    $('#results').append('<div class="progress"> <div class="progress-bar" role="progressbar" style="width: ' + percent_of_right_answers + '%;" aria-valuenow="'+ percent_of_right_answers + '" aria-valuemin="0" aria-valuemax="100">' + percent_of_right_answers + '%</div> </div>')
+
+                    for(let i = 0; i < question_ids.length; i++)
+                    {
+                      temp = JSON.parse(window.sessionStorage.getItem(question_ids[i]));
+                      question = ' ' + temp['question']
+                      if (response.answers_bit_vector[i])
+                      {
+                        div_class = '"alert alert-success"'
+                        i_class = '"far fa-smile"'
+                      }
+
+                      else
+                      {
+                        div_class = '"alert alert-danger"'
+                        i_class = '"far fa-frown-open"'
+                      }
+                      $('#results').append('<div class=' + div_class + 'role="alert">' + (i+1) + '. <i class=' + i_class + '></i>' + question + '</div>')
+                    }
+
+                  }
+                  else
+                  {
+                    console.log('Can not redirect.');
+                  }
+                }
+            });
+          }
+
+        }
+        refresh_form(step)
+        step += 1;
+        $('#step').text(step);
+      }
+    });
+
+  </script>
+
+{% endblock %}

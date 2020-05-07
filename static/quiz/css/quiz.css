@@ -1,0 +1,252 @@
+.header_link a {
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+  color: white; }
+
+.header_link a:hover {
+  color: LightGray;
+  text-decoration: none; }
+
+.btn_class {
+  width: 100px;
+  border-radius: 20px; }
+
+.header_mobile {
+  display: none; }
+
+#exampleInputName {
+  background-image: url("https://www.freepnglogos.com/uploads/search-png/search-icon-transparent-images-vector-16.png");
+  background-repeat: no-repeat;
+  background-position: 95%;
+  background-size: 22px;
+  outline: none;
+  border-radius: 5px;
+  height: 50px; }
+
+.search__input {
+  width: 100%;
+  height: 40px;
+  border-radius: 20px;
+  border: 2px solid silver; }
+
+.searchbar {
+  margin-bottom: auto;
+  margin-top: auto;
+  height: 50px;
+  background-color: #353b48;
+  border-radius: 30px;
+  padding: 10px; }
+
+.search_input {
+  color: white;
+  border: 0;
+  outline: 0;
+  background: none;
+  width: 0;
+  caret-color: transparent;
+  line-height: 30px;
+  -webkit-transition: width 0.4s linear;
+  -o-transition: width 0.4s linear;
+  transition: width 0.4s linear; }
+
+.searchbar:hover .search_input {
+  padding: 0 10px;
+  width: 300px;
+  max-width: 50%;
+  -webkit-transition: width 0.4s linear;
+  -o-transition: width 0.4s linear;
+  transition: width 0.4s linear; }
+
+.searchbar:hover .search_icon {
+  background: white;
+  color: #696969; }
+
+.search_icon {
+  height: 30px;
+  width: 30px;
+  float: right;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  border-radius: 50%;
+  color: white; }
+
+.fa-home:before {
+  padding-right: 5px; }
+
+.search {
+  display: inline-block;
+  position: relative;
+  height: 30px;
+  width: 30px;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0px 8px 7px 0px;
+  padding-left: 5px;
+  border: 3px solid silver;
+  border-radius: 25px;
+  -webkit-transition: all 200ms ease;
+  -o-transition: all 200ms ease;
+  transition: all 200ms ease;
+  cursor: text; }
+
+input {
+  width: 100%;
+  border: none;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Helvetica;
+  font-size: 15px;
+  color: white;
+  padding-bottom: 10px;
+  background: transparent;
+  outline-width: 0px; }
+
+.inpt_search {
+  width: 100px;
+  height: 30px;
+  border: 0px;
+  border-bottom: 2px solid silver;
+  background-color: #0e1823;
+  color: white; }
+
+.header_mobile {
+  display: none;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 10; }
+
+@media screen and (max-width: 768px) {
+  .header_md {
+    display: none; }
+  .header_mobile {
+    display: block; } }
+
+.end {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex; }
+  .end .edit {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 10px;
+    color: black; }
+    .end .edit i {
+      padding: 0 0 0 5px; }
+  .end a:hover {
+    text-decoration: none; }
+
+.div_categories-comment-like ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 0; }
+
+.categories-comment-like_title {
+  color: #505050; }
+
+.categories-comment-like-item {
+  padding-bottom: 45px; }
+
+.div_categories-comment-like li {
+  font-size: 13px; }
+
+.categor-comment-like_item a:hover {
+  color: #007bff;
+  text-decoration: none; }
+
+.cat_count {
+  float: right;
+  font-weight: 700;
+  background-color: #f3f3f3;
+  color: #9a9a9a;
+  border-radius: 50px;
+  padding: 0 8px; }
+
+.categor-comment-like_item {
+  padding-bottom: 15px;
+  padding-top: 5px;
+  border-bottom: 1px solid #e3e3e3;
+  font-size: 15px; }
+
+.categor-comment-like_item a {
+  text-decoration: none;
+  color: #888;
+  font-weight: 500; }
+
+.col-pad {
+  padding-bottom: 25px; }
+
+ul.page-numbers {
+  display: table;
+  list-style: none;
+  background-color: #f4f4f4;
+  padding: 5px 4px;
+  border-radius: 30px;
+  border-width: 0; }
+  ul.page-numbers li {
+    display: block;
+    float: left;
+    margin: 0 2px;
+    text-align: center; }
+
+ul.page-numbers .current {
+  color: #fff;
+  background-color: #353b48;
+  border-radius: 30px; }
+
+ul.page-numbers .current:hover {
+  background-color: #007bff; }
+
+ul.page-numbers a {
+  text-decoration: none;
+  color: #353b48; }
+
+ul.page-numbers a:hover {
+  color: #007bff; }
+
+ul.page-numbers .current {
+  font-weight: 700; }
+
+ul.page-numbers a, ul.page-numbers span {
+  display: block;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  font-weight: 400;
+  cursor: pointer;
+  padding: 0; }
+
+.sh-pagination {
+  padding-bottom: 20px; }
+
+.list-inline-item a {
+  color: #353b48; }
+
+.list-inline-item a:hover {
+  color: #007bff; }
+
+.content {
+  padding: 16px; }
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%; }
+
+.sticky + .content {
+  padding-top: 102px; }
+
+.list-inline-item a {
+  color: #353b48; }
+
+.list-inline-item a:hover {
+  color: #007bff; }

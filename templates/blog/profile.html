@@ -1,0 +1,415 @@
+{% extends "blog/base.html" %}
+{% block title %}{{user.get_full_name}}{% endblock %}
+{% load static %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'blog/css/my_profile.css' %}">
+{% endblock %}
+
+{% block page %}
+  <div class="container">
+      <div class="row justify-content-center">
+          <div class="col-md-3 text-center">
+              <div class="profile-img">
+                  <img src="{{user.profile.get_image_url}}" name="aboutme" id="userImage" class="img-circle avatar img-circle img-thumbnail" alt="avatar" >
+                  {% if request.user == user %}
+                    <div class="file btn btn-lg btn-primary">
+                        Change Photo
+                        <input type="file" name="file" class="file-upload">
+                    </div>
+                  {% endif %}
+              </div>
+              <h3>{{user.get_full_name}}</h3>
+          </div>
+      </div>
+      <div class="row justify-content-center">
+          <div class="row-md-4">
+              <div class="profile-usermenu text-center">
+                  <ul class="navbar-nav">
+                      <li class="nav-item">
+                          <p class="prof_p"><i class="far fa-envelope"></i><span>Email</span> {{user.email}}</p>
+                      </li>
+                      <li class="nav-item">
+                          <p class="prof_p"><i class="fas fa-calendar-alt"></i><span>Date joined:</span> {{user.date_joined}} </p>
+                      </li>
+                      <li class="nav-item">
+                          <p class="prof_p"><i class="fas fa-asterisk"></i><span class="pr-1">Preferences:</span>{% for preference in user.profile.preferences.all%}{{preference.name}}{% if not forloop.last%}, {% endif %}{% endfor %}</p>
+                      </li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+      <br>
+      <main class="col-md-12">
+          <div class="row justify-content-center">
+              <ul class="nav nav-tabs " id="myTab" role="tablist">
+                  <li class="nav-item">
+                      <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">About</a>
+                  </li>
+                  <li class="nav-item">
+                      <a onclick="get_articles(this)" class="nav-link" id="categories-tab" data-toggle="tab" href="#categories" role="tab" aria-controls="categories" aria-selected="false">Articles {{number_of_articles}}</a>
+                  </li>
+                  <li class="nav-item">
+                      <a onclick="get_friends(this)" class="nav-link" id="friend-tab" data-toggle="tab" href="#friend" role="tab" aria-controls="friend" aria-selected="false">Friends {{number_of_friends}}</a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link" id="follow-tab" data-toggle="tab" href="#follow" role="tab" aria-controls="follow" aria-selected="false">Followers 230</a>
+                  </li>
+                  <!-- <li class="nav-item">
+                      <a class="nav-link" id="prefer-tab" data-toggle="tab" href="#prefer" role="tab" aria-controls="prefer" aria-selected="false">Preference</a>
+                  </li> -->
+              </ul>
+          </div>
+           <div class="tab-content profile-tab" id="myTabContent">
+              <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                {% if request.user == user %}
+                  <form class="form" method="post" id="registrationForm">
+                      <div class="row justify-content-center">
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">First Name</label>
+                              <input type="text" class="form-control regist_inp" placeholder="First Name">
+                          </div>
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">Last Name</label>
+                              <input type="text" class="form-control regist_inp" placeholder="Last Name">
+                          </div>
+                      </div>
+                      <div class="row justify-content-center">
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">Username</label>
+                              <input type="text" class="form-control regist_inp" placeholder="Username">
+                          </div>
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">Email</label>
+                              <input type="text" class="form-control regist_inp" placeholder="Email">
+                          </div>
+                      </div>
+                      <div class="row justify-content-center">
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">Password</label>
+                              <input type="password" class="form-control regist_inp" placeholder="Password">
+                          </div>
+                          <div class="col-md-5 registr_col">
+                              <label class="regist_text">Confirm Password</label>
+                              <input type="password" class="form-control regist_inp"  placeholder="Confirm Password">
+                          </div>
+                      </div>
+                      <div class="row justify-content-center">
+                          <div class="col-md-12 text-center">
+                              <button type="button" class="btn btn-success" style="width: 200px;">Save</button>
+                          </div>
+                      </div>
+                  </form>
+                {% else %}
+            	    <blockquote>
+                    {{user.get_full_name}}
+                  </blockquote>
+
+                  Preferences:
+                  {% for preference in user.profile.preferences.all %}
+                    {{preference.name}}
+                    {% if not forloop.last %},{% endif %}
+                  {% endfor %}
+                {% endif %}
+              </div>
+              {% include 'blog/profile_articles.html' %}
+              {% include 'blog/profile_friends.html' %}
+              {% include 'blog/profile_followers.html' %}
+          </div>
+      </div>
+  <br>
+
+
+  <script>
+    window.sessionStorage.clear()
+    $(document).ready(function() {
+        var readURL = function(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $('.avatar').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        $(".file-upload").on('change', function(){
+            readURL(this);
+        });
+    });
+  </script>
+
+  <script>
+    function render_pagination(current_page, num_pages)
+    {
+      $('#id_pagination').empty()
+
+      if (current_page > 3)
+      {
+        $('#id_pagination').append('<li><a class="page-numbers" onclick="get_articles(this)">' + 1 + '</a></li>')
+        $('#id_pagination').append('<li><a class="page-numbers" id="left_bound" onclick="get_articles(this)">...</a></li>')
+      }
+
+      for (let i = 1; i <= num_pages; i++)
+      {
+        if (i >= current_page - 2 && i <= current_page+2)
+        {
+          if (i == current_page)
+            $('#id_pagination').append('<li><span class="page-numbers current" onclick="get_articles(this)">' + current_page + '</span></li>')
+          else
+            $('#id_pagination').append('<li><a class="page-numbers" onclick="get_articles(this)">' + i + '</a></li>')
+        }
+      }
+
+      if (num_pages-2 > current_page)
+      {
+        $('#id_pagination').append('<li><a class="page-numbers" id="right_bound" onclick="get_articles(this)">...</a></li>')
+        $('#id_pagination').append('<li><a class="page-numbers" onclick="get_articles(this)">' + num_pages + '</a></li>')
+      }
+    }
+  </script>
+
+  <script>
+    function render_friends(is_owner, friends)
+    {
+      $('#id_friends').empty()
+      for (friend of friends)
+      {
+
+        let div_col = document.createElement('div')
+        div_col.className = "col-xs-12 col-sm-6 col-md-4 col-card"
+
+        let div_front_side = document.createElement('div')
+        div_front_side.className = "image-flip mainflip frontside"
+
+        let div_card = document.createElement('div')
+        div_card.className = "card"
+
+        let div_card_body = document.createElement('div')
+        div_card_body.className = "card-body text-center"
+
+        let user_image = document.createElement('img')
+        user_image.src = friend.image
+        user_image.className = "img-fluid"
+
+        let user_link = document.createElement("a")
+        user_link.href = '/accounts/' + friend.id
+        user_link.appendChild(user_image)
+
+        div_card_body.appendChild(user_link)
+
+        let user_full_name = document.createElement('h4')
+        user_full_name.className = "card-title"
+        user_full_name.innerHTML = friend.full_name
+
+        div_card_body.appendChild(user_full_name)
+
+
+        if (friend.id != {{request.user.id}} && friend.chat_id)
+        {
+          let chat_link = document.createElement('a')
+
+          chat_link.href = '/chat/conversation/' + friend.chat_id + '/'
+          chat_link_i = document.createElement('i')
+          chat_link_i.className = "far fa-comment-dots"
+          chat_link.appendChild(chat_link_i)
+
+          let div_icon_friend = document.createElement('div')
+          div_icon_friend.className = "icon_frend"
+          div_icon_friend.appendChild(chat_link)
+
+          let div_chat_icon_section = document.createElement('div')
+          div_chat_icon_section.className = "d-flex justify-content-center"
+          div_chat_icon_section.appendChild(div_icon_friend)
+
+          div_card_body.appendChild(div_chat_icon_section)
+        }
+
+        if(friend.id != {{request.user.id}})
+        {
+          let follow_button = document.createElement('button')
+          follow_button.type = "submit"
+          follow_button.className = "btn btn-outline-success cards_btn mr-1"
+          follow_button.value = friend.id
+          follow_button.id = "id_follow"
+          follow_button.name = "follow" // unfollow
+          follow_button_i = document.createElement('i')
+          follow_button_i.className = "fas fa-long-arrow-alt-right my_icon"
+          follow_button.appendChild(follow_button_i)
+          follow_button.innerHTML += "Follow"
+
+          div_card_body.appendChild(follow_button)
+        }
+
+        if(friend.id != {{request.user.id}})
+        {
+          let delete_button = document.createElement('button')
+          delete_button.type = "submit"
+          delete_button.className = "btn btn-outline-danger cards_btn"
+          delete_button.value = friend.id
+          delete_button.id = "id_delete"
+          delete_button.name = "delete" // unfollow
+          delete_button_i = document.createElement('i')
+          delete_button_i.className = "fas fa-user-times my_icon"
+          delete_button.appendChild(delete_button_i)
+          delete_button.innerHTML += "Delete"
+
+          div_card_body.appendChild(delete_button)
+
+        }
+
+        div_card.appendChild(div_card_body)
+        div_front_side.appendChild(div_card)
+        div_col.appendChild(div_front_side)
+
+        $('#id_friends').append(div_col)
+
+      }
+    }
+
+    function get_friends(el)
+    {
+      page = el.innerText
+      page = parseInt(page, 10)
+      if (Number.isNaN(page))
+          page = 1
+
+      if ('friends:' + page in window.sessionStorage)
+      {
+        render_friends(page)
+        render_pagination(page, JSON.parse(window.sessionStorage.getItem('friends_num_pages')))
+      }
+      else
+      {
+        $.ajax({
+          type: 'GET',
+          url: '{% url "ajax_get_user_friends" %}',
+          data: {'user_id': '{{user.id}}', 'page': page},
+          dataType: 'json',
+          success: function(response){
+            console.log(response)
+            render_friends(response.data.is_owner, response.data.friends)
+          },
+          error: function(rs, e){
+            console.log(rs.responseText);
+          },
+        });
+      }
+    }
+  </script>
+
+
+
+  <script>
+    function render_articles(page, articles=null)
+    {
+      $('#id_articles').empty()
+      if (!(articles))
+        articles = JSON.parse(window.sessionStorage.getItem('articles:' + page))
+
+      else
+        window.sessionStorage.setItem('articles:' + page, JSON.stringify(articles))
+
+      let i = 0;
+      for(article of articles)
+      {
+          let article_link = document.createElement('a')
+          article_link.href = '/articles/' + article.id
+          article_link.innerHTML = article.title
+
+          let article_title = document.createElement('h5');
+          article_title.className = "card-title";
+          article_title.appendChild(article_link);
+
+          let article_link_with_description = document.createElement('a')
+          article_link_with_description.href = '/articles/' + article.id
+          article_link_with_description.innerHTML = article.description
+
+          let article_description = document.createElement('p');
+          article_description.className = "card-text";
+          article_description.appendChild(article_link_with_description);
+          article_description.appendChild(document.createElement('hr'));
+
+          let article_tags = document.createElement('p');
+          article_tags.className = "card_text";
+
+          let tag_small = document.createElement('small');
+          tag_small.className = "text-muted";
+
+          let tag_small_i = document.createElement('i');
+          tag_small_i.className = "fas fa-tags";
+          tag_small.appendChild(tag_small_i)
+          tag_small.innerHTML += 'Tags: '
+          for (tag of article.tags)
+          {
+              let tag_small_a = document.createElement('a');
+              tag_small_a.href = '#';
+              tag_small_a.innerHTML = tag + ', '
+              tag_small.appendChild(tag_small_a)
+          }
+          article_tags.appendChild(tag_small)
+
+          let card_body_div = document.createElement('div')
+          card_body_div.className = "card_body mr-4";
+          card_body_div.appendChild(article_title);
+          card_body_div.appendChild(article_description);
+          card_body_div.appendChild(article_tags);
+
+          let col_div = document.createElement('div')
+          col_div.className = "d-flex justify-content-center card_width";
+          col_div.appendChild(card_body_div);
+
+          if (i % 2 == 0)
+          {
+              var row_div = document.createElement('div')
+              row_div.className = "row justify-content-center ml-4";
+          }
+
+          row_div.appendChild(col_div);
+
+          if (i % 2 == 0)
+          {
+              document.getElementById("id_articles").appendChild(row_div)
+          }
+
+          i++;
+      }
+    }
+
+    function get_articles(el)
+    {
+      page = el.innerText
+      page = parseInt(page, 10)
+      if (el.id == 'left_bound')
+        page = window.sessionStorage.getItem('articles_current_page') - 3
+      else if(el.id == 'right_bound')
+        page = window.sessionStorage.getItem('articles_current_page') + 3
+
+      if (Number.isNaN(page))
+          page = 1
+
+      if ('articles:' + page in window.sessionStorage)
+      {
+        render_articles(page)
+        render_pagination(page, JSON.parse(window.sessionStorage.getItem('articles_num_pages')))
+      }
+      else
+      {
+        $.ajax({
+          type: 'GET',
+          url: '{% url "ajax_get_user_articles" %}',
+          data: {'user_id': '{{user.id}}', 'page': page},
+          dataType: 'json',
+          success: function(response){
+            render_articles(response.data.current_page, response.data.articles)
+            render_pagination(response.data.current_page, response.data.num_pages)
+            window.sessionStorage.setItem('articles_num_pages', JSON.stringify(response.data.num_pages))
+            window.sessionStorage.setItem('articles_current_page', JSON.stringify(response.data.current_page))
+          },
+          error: function(rs, e){
+            console.log(rs.responseText);
+          },
+        });
+      }
+    }
+  </script>
+{% endblock %}

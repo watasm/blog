@@ -1,0 +1,48 @@
+{% extends 'blog/base.html'%}
+
+{% block page %}
+<br><br><br><br>
+<script type="text/javascript">
+$(document).ready(function(){
+  console.log(window.location.pathname)
+  if (window.location.pathname == '/inbox/notifications/unread/')
+    $('#mark_all_notifications_as_read').style.display = 'block'
+
+  else
+    $('.close').remove()
+
+
+  $('#mark_all_notifications_as_read').on('click', function(){
+    $.ajax({
+      type: 'POST',
+      url: '{% url "blog:mark_all_notifications_as_read" %}',
+      data: {'session_key': '{{request.session.session_key|escapejs}}', 'csrfmiddlewaretoken': '{{csrf_token|escapejs}}'},
+      dataType: 'json',
+      success: function(response)
+      {
+        console.log(response)
+        location.reload()
+      },
+      error: function(rs, e){
+        console.log(rs.responseText);
+      }
+    });
+  })
+})
+</script>
+<ul class="notifications">
+  {% if notifications %}
+    <button style='display: None' type="button" class="btn btn-danger" id="mark_all_notifications_as_read"></button>
+  {% else %}
+    <p>No notifications yet.</p>
+  {% endif %}
+
+  {% for notice in notifications %}
+    {% if notice.description == 'friend_request' %}
+      {% include 'notifications/friend_request_notice.html' %}
+    {% else %}
+      {% include 'notifications/notice.html' %}
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endblock %}

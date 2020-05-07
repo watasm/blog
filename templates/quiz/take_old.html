@@ -1,0 +1,75 @@
+{% extends "blog/base.html" %}
+{% load quiz_tags %}
+{% block title %}Quiz {% endblock %}
+{% block page %}
+<style>
+  .right{
+    color: green;
+  }
+  .wrong{
+    color: red;
+  }
+
+.btn {
+  margin-bottom: 5px;
+}
+</style>
+<hr>
+<div style="height:70px">
+  <p id="quiz_result">Result</p>
+</div>
+<hr>
+
+{% for question in quiz.questions.all %}
+  <h2>{{question.question}}</h2>
+  <form method="POST">
+    {{csrftoken}}
+    {% get_choices question %}
+  </form>
+{% endfor %}
+
+
+<script>
+  $(document).ready(function(){
+    var answer_count = 0;
+    var questions_count = "{{ questions_count|escapejs }}";
+    var count = 0;
+
+    $(document).on('click', '#button', function(event){
+      event.preventDefault();
+      let question_id = $(this).attr('name');
+      let id = $(this).attr('data-id');
+
+      // disable question choices
+      $("input[name=" + question_id + "]").prop('disabled', true);
+
+      $.ajax({
+        type: 'POST',
+        url: '{% url "recive_user_answer" %}',
+        data: {'question_id': question_id, 'id': id, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+        dataType: 'json',
+        success: function(response)
+        {
+          answer_count += 1;
+
+          $("input[data-id=" + response.right_choice_id + "]").addClass("right");
+          if (response.is_right)
+            count += 1;
+          else
+            $("input[data-id=" + id + "]").addClass("wrong");
+
+          if (answer_count == questions_count)
+            if (questions_count == count)
+            {
+              $('#quiz_result').text("You passed the quiz.");
+            }
+            else
+            {
+              $('#quiz_result').text("You do not passed the quiz.");
+            }
+          },
+      });
+    });
+  });
+</script>
+{% endblock %}

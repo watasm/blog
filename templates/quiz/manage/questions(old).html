@@ -1,0 +1,23 @@
+{% extends "blog/base.html" %}
+{% block title %}
+{% if object %}
+  Edit {{object.quiz.title}} question {{object.id}}
+{% else %}
+  Add a new question
+{% endif %}
+{% endblock %}
+
+{% block page %}
+  <br><br><br><br>
+  <h1>{% if object %}Edit "{{ object.quiz.title }}" question {{object.order}} {% else %}Create question{% endif %} </h1>
+  <form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }} <hr>
+    <fieldset>
+      <legend>Question choices</legend>
+      {{ question_choices_formset.as_p }}
+      {{ question_choices_formset.management_form }}
+    </fieldset>
+    <input type="submit" value="Update data" class="submit" />
+  </form>
+{% endblock %}

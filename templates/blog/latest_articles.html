@@ -1,0 +1,8 @@
+<h3 class="post-subtitle">Latest articles</h3>
+<ul>
+  {% for article in latest_articles %}
+    <li style='list-style-type: none;'>
+      <a href="{{ article.get_absolute_url }}">{{ article.title }}</a>
+    </li>
+  {% endfor %}
+</ul>

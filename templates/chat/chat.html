@@ -1,0 +1,382 @@
+{% load static %}
+{% load tz %}
+{% load tz_detect %}
+{% tz_detect %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='UTF-8'>
+  <meta name="robots" content="noindex">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+  <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700,300' rel='stylesheet' type='text/css'>
+  <script src="https://use.typekit.net/hoy3lrg.js"></script>
+  <script>try{Typekit.load({ async: true });}catch(e){}</script>
+  <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css'>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}">
+  <script src="{% static 'chat/js/moment.min.js' %}"></script>
+
+</head>
+<body>
+<div id="frame">
+	<div id="sidepanel">
+		<div id="profile">
+			<div class="wrap">
+				<img id="profile-img" src="{{request.user.profile.get_image_url}}" class="online" alt="" />
+				<p>{{request.user.get_full_name}}</p>
+				<i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
+				<div id="status-options">
+					<ul>
+						<li id="status-online" class="active"><span class="status-circle"></span> <p>Online</p></li>
+						<li id="status-away"><span class="status-circle"></span> <p>Away</p></li>
+						<li id="status-busy"><span class="status-circle"></span> <p>Busy</p></li>
+						<li id="status-offline"><span class="status-circle"></span> <p>Offline</p></li>
+					</ul>
+				</div>
+				<div id="expanded">
+					<label for="twitter"><i class="fab fa-facebook fa-fw" aria-hidden="true"></i></label>
+					<input name="twitter" type="text" value="mikeross" />
+					<label for="twitter"><i class="fab fa-twitter fa-fw" aria-hidden="true"></i></label>
+					<input name="twitter" type="text" value="ross81" />
+					<label for="twitter"><i class="fab fa-instagram fa-fw" aria-hidden="true"></i></label>
+					<input name="twitter" type="text" value="mike.ross" />
+				</div>
+			</div>
+		</div>
+		<div id="search">
+			<label for=""><i class="fa fa-search" aria-hidden="true"></i></label>
+			<input type="text" placeholder="Search contacts..." />
+		</div>
+
+		<div id="contacts">
+			<ul>
+        <hr>
+        <p>Conversations</p>
+        {% for conversation in conversations %}
+          <li class="contact {% if model_name == 'conversation' and chat.id == conversation.id %}active{% endif %}">
+            <div class="wrap">
+              {% if request.user == conversation.user_from %}
+                <span class="contact-status {{conversation.user_to.onlineuseractivity.is_online}}"></span>
+                  <img src="{{conversation.user_to.profile.get_image_url}}" alt="">
+                  <a style='color:#f5f5f5; text-decoration:none' href="{% url 'chat:chat' 'conversation' conversation.id %}">
+                    <div class="meta">
+                      <p>{{conversation.user_to.get_full_name}}</p>
+                      <p id="conversation_{{conversation.id}}">{% if request.user.id == conversation.last_message.0.user.id %}You:{% endif %} {{conversation.last_message.0.content.text}}</p>
+                    </div>
+                  </a>
+              {% else %}
+                <span class="contact-status {{conversation.user_from.onlineuseractivity.is_online}}"></span>
+                  <img src="{{conversation.user_from.profile.get_image_url}}" alt="">
+                  <a style='color:#f5f5f5; text-decoration:none' href="{% url 'chat:chat' 'conversation' conversation.id %}">
+                    <div class="meta">
+                      <p>{{conversation.user_from.get_full_name}}</p>
+                      <p id="conversation_{{conversation.id}}">{% if request.user.id == conversation.last_message.0.user.id %}You:{% endif %} {{conversation.last_message.0.content.text}}</p>
+                    </div>
+                  </a>
+              {% endif %}
+
+            </div>
+          </li>
+        {% empty %}
+          <p>No conversations</p>
+        {% endfor %}
+        <hr>
+        <p>Groups</p>
+        {% for group in groups %}
+          <li class="contact {% if model_name == 'group' and chat.id == group.id %}active{% endif %}">
+            <div class="wrap">
+              <a style='float:right;color:white' href="{% url 'chat:leave_from_group' group.id %}"><i data-toggle="tooltip" title="Leave group" class="fas fa-user-minus"></i></a>
+              <a style='float:right;color:white;margin-right:10px' href="{% url 'chat:add_users_to_group' group.id %}"><i data-toggle="tooltip" title="Add users" class="fas fa-user-plus"></i></a>
+              <span class="contact-status online"></span>
+              <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="">
+              <a style='color:#f5f5f5; text-decoration:none' href="{% url 'chat:chat' 'group' group.id %}">
+                <div class="meta">
+                  <p>Group name</p>
+                  <p id="group_{{group.id}}">{% if request.user.id == group.last_message.0.user.id %}You{% else %}{{group.last_message.0}}{% endif %}: {{group.last_message.0.content.text}}</p>
+                </div>
+              </a>
+            </div>
+          </li>
+        {% empty %}
+          <p>No groups</p>
+        {% endfor %}
+
+        {% if chat %}
+          {% if model_name == 'group' %}
+            <hr>
+            <p>Current group participants</p>
+            {% for participant in chat.participants.all %}
+              {% if request.user != participant.user %}
+                <li class="contact">
+                  <div class="wrap">
+                    <span class="contact-status {% if participant.is_authenticated %}online{% else %}{% endif %}"></span>
+                    <img src="{{participant.profile.get_image_url}}" alt="">
+        						<div class="meta">
+        							<p class="name">{{participant.get_full_name}}</p>
+        							<p class="preview">You just got LITT up, Mike.</p>
+        						</div>
+                  </div>
+                </li>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endif %}
+			</ul>
+		</div>
+		<div id="bottom-bar">
+      <a href='{% url 'chat:create_group' %}'><button id="addgroup"><i class="fa fa-users" aria-hidden="true"></i> <span>Add group</span></button></a>
+			<!-- <button id="addcontact"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> <span>Add contact</span></button> -->
+			<button id="settings"><i class="fa fa-cog fa-fw" aria-hidden="true"></i> <span>Settings</span></button>
+		</div>
+	</div>
+	<div class="content">
+		<div class="contact-profile">
+      {% if model_name == 'group' %}
+  			<img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="">
+  			<p>
+          In group:
+          {% for participant in chat.participants.all%}
+            {{participant.get_full_name}}
+            {% if not forloop.last %},{% endif %}
+          {% endfor %}
+        </p>
+      {% else %}
+
+        {% if request.user == chat.user_from %}
+          <img src="{{chat.user_to.profile.get_image_url}}" alt="">
+          <p>{{chat.user_to.get_full_name}}</p>
+        {% else %}
+          <img src="{{chat.user_from.profile.get_image_url}}" alt="">
+          <p>{{chat.user_from.get_full_name}}</p>
+        {% endif %}
+
+  			<div class="social-media">
+  				<i class="fab fa-facebook" aria-hidden="true"></i>
+  				<i class="fab fa-twitter" aria-hidden="true"></i>
+  				 <i class="fab fa-instagram" aria-hidden="true"></i>
+  			</div>
+      {% endif %}
+		</div>
+
+		<div class="messages">
+      {% if chat %}
+        <a style='text-decoration:None' id='get_next_message_packet' href="#">Get old messages.</a>
+      {% endif %}
+			<ul>
+
+			</ul>
+		</div>
+
+		<div class="message-input">
+			<div class="wrap">
+        <div>
+          <img style='display:none' id="image_to_send" src="#" height="100" width="100">
+        </div>
+  			<input id='message_text' type="text" placeholder="Write your message..." />
+        <label class="fa fa-paperclip attachment" aria-hidden="true" >
+          <input id='message_file' type="file" name="image" accept="image/*" style='display:none' onchange="previewFile()"/>
+        </label>
+  			<button class="submit"><i class="fa fa-paper-plane"></i></button>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+
+<script>
+
+$("#profile-img").click(function() {
+  $("#status-options").toggleClass("active");
+});
+
+$(".expand-button").click(function() {
+  $("#profile").toggleClass("expanded");
+  $("#contacts").toggleClass("expanded");
+});
+
+$("#status-options ul li").click(function() {
+  $("#profile-img").removeClass();
+  $("#status-online").removeClass("active");
+  $("#status-away").removeClass("active");
+  $("#status-busy").removeClass("active");
+  $("#status-offline").removeClass("active");
+  $(this).addClass("active");
+
+  if($("#status-online").hasClass("active")) {
+    $("#profile-img").addClass("online");
+  } else if ($("#status-away").hasClass("active")) {
+    $("#profile-img").addClass("away");
+  } else if ($("#status-busy").hasClass("active")) {
+    $("#profile-img").addClass("busy");
+  } else if ($("#status-offline").hasClass("active")) {
+    $("#profile-img").addClass("offline");
+  } else {
+    $("#profile-img").removeClass();
+  };
+
+  $("#status-options").removeClass("active");
+});
+
+  var reader;
+  function previewFile() {
+    var preview = document.querySelector('#image_to_send');
+    var file    = document.querySelector('input[type=file]').files[0];
+    var reader  = new FileReader();
+
+    reader.addEventListener("load", function () {
+      preview.src = reader.result;
+    }, false);
+
+    if (file) {
+      preview.style.display = 'inline';
+      reader.readAsDataURL(file);
+    }
+  }
+
+  var chat_id = '{{ chat.id }}';
+  var model_name = '{{model_name}}/'
+  if (chat_id)
+  {
+  if (document.location.protocol === 'https:')
+    websocket_protocol = 'wss://';
+  else
+    websocket_protocol = 'ws://';
+  var chatSocket = new WebSocket(websocket_protocol + window.location.host + '/ws/chat/' + model_name + chat_id + '/');
+
+  chatSocket.onmessage = function(e) {
+      let data = JSON.parse(e.data);
+      let user_id = data['user_id'];
+      let user_image_url = data['user_image_url'];
+      let message = data['message'];
+      let message_type = data['message_type']
+      let message_chat_id = data['chat_id']
+      let message_chat_model_name = data['model_name']
+      let user_full_name = data['user_full_name']
+
+      if ('{{request.user.id}}' == user_id)
+      {
+        li_class_name = 'sent'
+        user_full_name = 'You'
+      }
+
+      else
+        li_class_name = 'replies'
+
+      if (message_type == 'text')
+      {
+        $('<li class="'+li_class_name+'"><img src="' +  user_image_url + '" alt="" /><p>' + message + '</p></li>').appendTo($('.messages ul'));
+        $('#'+message_chat_model_name+'_'+message_chat_id).text(user_full_name+': '+message)
+      }
+
+      else if (message_type == 'image')
+      {
+        $('#image_to_send')[0].src = ''
+        $('#image_to_send')[0].style.display = 'none'
+        $('<li class="'+li_class_name+'"><img src="' + user_image_url + '" alt="" /><a target="_blank" href="'+ data['message_image_url'] + '"><img style="height:100px; width:100px" src="' + data['message_image_url'] + '"></a></li>').appendTo($('.messages ul'));
+        $('#'+message_chat_model_name+'_'+message_chat_id).text(user_full_name+': Image');
+
+      }
+
+      $('.message-input input').val(null);
+      $(".messages").animate({ scrollTop: $(".messages")[0].scrollHeight }, "fast");
+
+  };
+
+  chatSocket.onclose = function(e) {
+      console.error('Chat socket closed unexpectedly');
+      console.log(e)
+  };
+
+  function newMessage() {
+    let image = $('#image_to_send')[0].src
+    if (image[0] == 'd')
+    {
+      var message = image
+      var message_type = 'image'
+
+    }
+
+    else
+    {
+      var message = $(".message-input input").val();
+      var message_type = 'text'
+    }
+
+
+    if($.trim(message) == '')
+      return false;
+
+    chatSocket.send(JSON.stringify({
+        'message': message,
+        'message_type': message_type
+    }));
+  };
+
+  $('.submit').click(function() {
+    newMessage();
+  });
+
+  $(window).on('keydown', function(e) {
+    if (e.which == 13) {
+      newMessage();
+      return false;
+    }
+  });
+
+  var first_message_date = moment.utc().format('YYYY-MM-DDTHH:mm:ss.SSS')+'Z'
+
+  function get_next_message_packet() {
+    $.ajax({
+      type: 'GET',
+      url: '{% url "chat:get_next_message_packet" %}',
+      data: {'chat_id': chat_id, 'model_name': model_name, 'first_message_date': first_message_date},
+      dataType: 'json',
+      success: function(response)
+      {
+        if (response.messages.length)
+        {
+        let messages = response.messages
+        if(response.end)
+          $('#get_next_message_packet').remove()
+        first_message_date = messages[messages.length-1]['date']
+        console.log(first_message_date)
+
+        for(let i = 0; i < messages.length; i++)
+        {
+          if ('{{request.user.id}}' == messages[i]['user_id'])
+          {
+            li_class_name = 'sent'
+            user_full_name = 'You'
+          }
+          else
+            li_class_name = 'replies'
+
+          let date = new Date(messages[i]['date']);
+          let formatted_date = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds()
+
+          if (messages[i]['content_type'] == 'Text')
+            $('<li class="'+li_class_name+'"><img src="' +  messages[i]['user_image_url'] + '" alt="" /><p>' + messages[i]['content'] + '<br>' + formatted_date +'</p></li>').prependTo($('.messages ul'));
+
+          else
+            $('<li class="'+li_class_name+'"><img src="' + messages[i]['user_image_url'] + '" alt="" /><a target="_blank" href="'+ messages[i]['content'] + '"><img style="height:100px; width:100px" src="' + messages[i]['content'] + '"></a></li>').prependTo($('.messages ul'));
+
+        }
+
+        }
+      },
+    });
+  };
+  $('#get_next_message_packet').on('click', function(){
+    get_next_message_packet()
+  })
+  get_next_message_packet()
+  $(".messages").animate({ scrollTop: $(".messages")[0].scrollHeight }, "fast");
+  }
+</script>
+</body>
+</html>

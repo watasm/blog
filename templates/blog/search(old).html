@@ -1,0 +1,34 @@
+{% extends "blog/base.html" %}
+{% block title %}Search{% endblock %}
+
+{% block page %}
+  <main>
+    {% if query %}
+
+      <div class="container">
+        <div class="row">
+  	<div class="col-md-6 img">
+  	   <h1>Articles containing "{{ query }}"</h1>
+      <hr>
+      <h3>
+      {% with results.count as total_results %}
+        Found {{ total_results }} result{{ total_results|pluralize }}
+      {% endwith %}
+      </h3>
+      {% for article in results %}
+        <h4><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></h4>
+        {{ article.body|truncatewords:5 }}
+    	{% empty %}
+        <p>There are no results for your query.</p>
+      {% endfor %}
+      <p><a href="{% url 'blog:article_search' %}">Search again</a></p>
+      {% else %}
+  	</div>
+      <h1>Search for articles</h1>
+      <form action="." method="get">
+        {{ form.as_p }}
+        <input type="submit" value="Search">
+      </form>
+    {% endif %}
+  </main>
+{% endblock %}

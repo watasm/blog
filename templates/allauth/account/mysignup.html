@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+{% load static%}
+<html lang="en">
+<head>
+	<title>Registration</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="{% static 'blog/img/icons/favicon.ico' %}"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/bootstrap/css/bootstrap.min.css'%}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/fonts/Linearicons-Free-v1.0.0/icon-font.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/animate/animate.css'%}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/css-hamburgers/hamburgers.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/animsition/css/animsition.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/select2/select2.min.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/vendor/daterangepicker/daterangepicker.css' %}">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/css/util.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'blog/css/main.css'%}">
+<!--===============================================================================================-->
+<script>
+function toggle() {
+  var x = document.getElementById("id_password");
+  if (x.type === "password") {
+    x.type = "text";
+  } else {
+    x.type = "password";
+  }
+}
+</script>
+</head>
+<body>
+
+	<div class="limiter">
+		<div class="container-login100">
+			<div class="wrap-login100 p-t-20 p-b-30">
+				<form method= "post" enctype="multipart/form-data">
+					{% csrf_token %}
+					<span class="login100-form-title p-b-40">
+						Registration
+					</span>
+					{% if user_form.errors %}
+    				{% for field in user_form %}
+        			{% for error in field.errors %}
+		            <div class="alert alert-danger">
+		                <strong>{{ error|escape }}</strong>
+		            </div>
+        			{% endfor %}
+    				{% endfor %}
+    				{% for error in user_form.non_field_errors %}
+				        <div class="alert alert-danger">
+				            <strong>{{ error|escape }}</strong>
+				        </div>
+    				{% endfor %}
+					{% endif %}
+					<div class="wrap-input100 validate-input m-b-16" data-validate="Please enter first name: ">
+						<input class="input100" type="text" name="{{user_form.first_name.name}}" placeholder="{{user_form.first_name.label}}" maxlength="150" id="{{user_form.first_name.id_for_label}}" required>
+						<span class="focus-input100"></span>
+					</div>
+
+					<div  class="wrap-input100 validate-input m-b-16" data-validate="Please enter last name: ">
+						<input class="input100" type="text" name="{{user_form.last_name.name}}" maxlength="150" placeholder="{{user_form.last_name.label}}" id="{{user_form.last_name.id_for_label}}" required>
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-16" data-validate="Please enter username: ">
+						<input class="input100" type="text" name="{{user_form.username.name}}" maxlength="100" placeholder="{{user_form.username.label}}" id="{{user_form.username.id_for_label}}" required>
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-16" data-validate="Please enter email: ">
+						<input class="input100" type="email" name="{{user_form.email.name}}" maxlength="254"  placeholder="{{user_form.email.label}}" id="{{user_form.email.id_for_label}}" required="">
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-20" data-validate = "Please enter password" required>
+						<span class="btn-show-pass" onclick="toggle()">
+							<i class="fa fa fa-eye"></i>
+						</span>
+						<input class="input100" type="password" name="{{user_form.password.name}}" placeholder="{{user_form.password.label}}" id="{{user_form.password.id_for_label}}" required>
+						<span class="focus-input100"></span>
+					</div>
+
+					<div class="wrap-input100 validate-input m-b-20" data-validate = "Please confirm password" required>
+						<span class="btn-show-pass" onclick="toggle()">
+							<i class="fa fa fa-eye"></i>
+						</span>
+						<input class="input100" type="password" name="{{user_form.confirm_password.name}}" placeholder="{{user_form.confirm_password.label}}" id="{{user_form.confirm_password.id_for_label}}" required>
+						<span class="focus-input100"></span>
+					</div>
+
+					{{user_form.date_joined}}
+
+					<label>Prefernce:</label>
+
+					<div>
+						{{profile_form.preferences}}
+					</div>
+
+					<div>
+						Image: {{profile_form.image}}
+					</div>
+
+					<div class="container-login100-form-btn">
+						<button class="login100-form-btn" type="submit">
+							Sign Up
+						</button>
+					</div>
+
+					<div class="flex-col-c p-t-64">
+						<a href="{% url 'account_login'%}" class="txt3 bo1 hov1">
+							Login
+						</a>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+
+
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/animsition/js/animsition.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/bootstrap/js/popper.js' %}"></script>
+	<script src="{% static 'blog/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/select2/select2.min.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/daterangepicker/moment.min.js' %}"></script>
+	<script src="{% static 'blog/vendor/daterangepicker/daterangepicker.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/vendor/countdowntime/countdowntime.js' %}"></script>
+<!--===============================================================================================-->
+	<script src="{% static 'blog/js/main.js'%}"></script>
+
+</body>
+</html>

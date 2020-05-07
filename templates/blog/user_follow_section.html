@@ -1,0 +1,13 @@
+{% if user.is_authenticated %}
+  <span>Total followers - </span><span class = 'count'>{{user.followers.count}}</span>
+  {% if not request.user == user %}
+    <form action="{% url 'profile_follow' %}" method="post">
+      {% csrf_token %}
+      {% if is_user_follow %}
+        <p><button type="submit" id = "follow_id" name='unfollow' value="{{ user.id }}" class = 'btn btn-danger'>Unfollow</button></p>
+      {% else %}
+        <p><button type="submit" id = "follow_id" name='follow' value="{{ user.id }}" class = 'btn btn-success'>Follow</button></p>
+      {% endif %}
+    </form>
+  {% endif %}
+{% endif %}

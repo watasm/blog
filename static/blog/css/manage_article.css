@@ -1,0 +1,49 @@
+.row {
+  justify-content: center;
+  padding: 3rem;
+  padding-top:24px
+}
+.row .card {
+  padding: 50px;
+}
+.row .card h2 {
+  text-align: center;
+}
+.row .card small {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.list-inline-item a {
+  color: #353b48;
+}
+
+.list-inline-item a:hover {
+  color: #007bff;
+}
+
+.card .card-body {
+  display: block;
+  justify-content: center;
+}
+
+@media screen and (max-width: 770px) {
+  .row {
+    padding: 94px 0 0 0;
+  }
+  .row .card {
+    padding: 0 0 10px 10px;
+    display: block;
+    justify-content: center;
+  }
+  .row .card .card-body input {
+    width: 100%;
+  }
+}
+h2 {
+  color: white;
+}
+
+.form-group > label
+{
+  color: white;
+}

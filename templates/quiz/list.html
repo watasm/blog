@@ -1,0 +1,103 @@
+{% extends 'blog/base.html' %}
+{% block title %} Quizzes {% endblock %}
+{% load static %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'quiz/css/quiz.css' %}">
+{% endblock %}
+
+{% block page %}
+  <br>
+  <section class="col-xs-12">
+     <div class="container">
+        <div class="row">
+           <main class="col-md-8">
+            {% for quiz in page_obj %}
+              {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}
+                <div class="col-md-5 col-pad">
+                  <div class="card">
+                    <img src="{{quiz.get_image_url}}" class="card-img-top">
+                    <div class="card-body">
+                      <h5 class="card-title" style='text-align:center'>{{quiz.title}}</h5>
+                      <div class="end">
+                        <div class="start">
+                          <a href="{% url 'take_quiz' quiz.id %}" class="btn btn-primary">START</a>
+                        </div>
+                        {% if quiz.user == request.user %}
+                          <a href="{% url 'quiz_update' quiz.id %}" class="edit">
+                            <h6>Finish edit</h6>
+                            <i class="fas fa-feather-alt"></i>
+                          </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+               {% if forloop.counter|divisibleby:2 or forloop.last %}</div>{% endif %}
+
+             {% endfor %}
+
+
+                 <div class="sh-pagination sh-default-color">
+                   <ul class="page-numbers">
+                     {% if page_obj.has_previous %}
+                       <li><a class="next page-numbers" href="?page={{page_obj.previous_page_number }}">&laquo</a></li>
+                     {% endif %}
+
+                     {% for page_number in page_obj.paginator.page_range %}
+                       <li>
+                         {% ifequal page_obj.number page_number %}
+                           <span class="page-numbers current">{{page_number}}</span>
+                         {% else %}
+                           <a class="page-numbers" href="?page={{ page_number }}">{{page_number}}</a>
+                         {% endifequal %}
+
+                       </li>
+                     {% endfor %}
+
+                     {% if page_obj.has_next %}
+                       <li><a class="next page-numbers" href="?page={{page_obj.next_page_number }}">&raquo</a></li>
+                     {% endif %}
+                   </ul>
+                 </div>
+                 <!-- >
+                   <div class="pagination">
+                     <span class="step-links">
+                         {% if page_obj.has_previous %}
+                             <a href="?page=1">&laquo; first</a>
+                             <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                         {% endif %}
+
+                         <span class="current">
+                             Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                         </span>
+
+                         {% if page_obj.has_next %}
+                             <a href="?page={{ page_obj.next_page_number }}">next</a>
+                             <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                         {% endif %}
+                     </span>
+                   </div>
+                 <-->
+           </main>
+           <div class="col-md-4 col-lg-3">
+              <div class="row">
+                 <aside class="col-sm-6 col-md-12">
+                    <div class="categories-comment-like-item div_categories-comment-like categor_div">
+                       <h3 class="categories-comment-like_title">Categories</h3>
+                       <ul>
+                         {% for category in categories %}
+                          <li class="categor-comment-like_item">
+                            <a href="#">{{category.name}}</a>
+                          </li>
+                         {% endfor %}
+                       </ul>
+                    </div>
+                    <a href="{% url 'quiz_create'%}"><button type="button" class="btn btn-secondary">Create new quiz+</button></a>
+                 </aside>
+              </div>
+           </div>
+        </div>
+     </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,7 @@
+<h4>Preferences</h4>
+<select name="preferences" id="id_preferences" multiple required>
+    <span class="multiselect-selected-text">Choose your preferneces</span>
+    {% for preference in preferences %}
+      <option value="{{preference.id}}">{{preference.name}}</option>
+    {% endfor %}
+</select>

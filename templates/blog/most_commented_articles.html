@@ -1,0 +1,10 @@
+<div class="categories-comment-like-item div_categories-comment-like">
+  <h3 class="categories-comment-like_title" style="font-size:25px;">Most commented articles</h3>
+  <ul>
+    {% for article in most_commented_articles %}
+      <li class="categor-comment-like_item">
+          <a href="{{ article.get_absolute_url }}">{{ article.title }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

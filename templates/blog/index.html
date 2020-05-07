@@ -1,0 +1,160 @@
+{% extends 'blog/base.html' %}
+{% block title %}Articles{% endblock title %}
+{% load static %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'blog/css/blog_card.css'%}">
+{% endblock %}
+
+{% load blog_tags %}
+{% load tz %}
+{% load tz_detect %}
+{% tz_detect %}
+
+{% block page %}
+{% include 'blog/popular_articles_section.html' %}
+<section>
+  <div class="container">
+    <div class="row">
+      <main class="col-md-8 col-lg-8 main pl-0" >
+        <div class="container">
+          <div class="row p-t-35">
+            {% for article in articles %}
+              <div class="blog-card">
+                  <div class="meta">
+                      <div class="photo" style="background-image: url({{article.get_image_url}})"></div>
+                      <ul class="details">
+                          <li class="author"><i class="fas fa-user"></i> <a href="{% url 'profile' article.user.id %}">{{article.user.get_full_name}}</a></li>
+                          <li class="date"><i class="fas fa-calendar-alt"></i>{{article.post_date}}</li>
+                          <li class="tags">
+                            <ul>
+                              <i class="fas fa-tags"></i>
+                              {% for tag in article.tags.all %}
+                                <li><a href="#">{{tag.name}}</a></li>
+                              {% endfor%}
+                            </ul>
+                          </li>
+                      </ul>
+                  </div>
+                  <div class="description">
+                      <span><a href="{% url 'blog:article_detail' article.id %}">{{article.title}}</a></span>
+                      <p>{{article.description}}</p>
+                      <p class="read-more">
+                          <a href="{% url 'blog:article_detail' article.id %}">Read More <i class="fas fa-arrow-right"></i></a>
+                      </p>
+                  </div>
+              </div>
+            {% endfor %}
+            <br>
+            <div class="sh-pagination sh-default-color">
+              <ul class="page-numbers">
+<!--
+                {% if articles.has_previous %}
+                  <li><a class="next page-numbers" href="?page={{articles.previous_page_number }}">&laquo</a></li>
+                {% endif %}
+
+                {% if articles.number > 3 %}
+                  <li><a class="page_numbers" href="?page=1">1</a></li>
+                  <li><span class="page_numbers">...</span></li>
+                {% endif %}
+
+                {% for page_number in articles.paginator.page_range %}
+                    {% if page_number <= articles.number|add:2 and page_number >= articles.number|add:-2 %}
+                      <li>
+                      {% if articles.number == page_number %}
+                        <span class="page-numbers current">{{page_number}}</span>
+                      {% else %}
+                        <a class="page-numbers" href="?page={{ page_number }}">{{page_number}}</a>
+                      {% endif %}
+                      </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if articles.paginator.num_pages|add:-2 > articles.number %}
+                  <li><span class="page_numbers">...</span></li>
+                  <li><a class="page_numbers" href="?page={{articles.paginator.num_pages}}">{{articles.paginator.num_pages}}</a></li>
+                {% endif %}
+
+                {% if articles.has_next %}
+                  <li><a class="next page-numbers" href="?page={{articles.next_page_number }}">&raquo</a></li>
+                {% endif %}
+                 -->
+
+                {% if current_page > 1  %}
+                  <li><a class="next page-numbers" href="?page={{current_page|add:-1}}">&laquo</a></li>
+                {% endif %}
+
+                {% if current_page > 3 %}
+                  <li><a class="page_numbers" href="?page=1">1</a></li>
+                  <li><a class="page-numbers" href="?page={{ current_page|add:-3}}">...</a></li>
+
+                {% endif %}
+
+                 {% for page_number in page_range %}
+                     {% if page_number <= current_page|add:2 and page_number >= current_page|add:-2 %}
+                       <li>
+                       {% if current_page == page_number %}
+                         <span class="page-numbers current">{{current_page}}</span>
+                       {% else %}
+                         <a class="page-numbers" href="?page={{ page_number }}">{{page_number}}</a>
+                       {% endif %}
+                       </li>
+                     {% endif %}
+                 {% endfor %}
+
+                 {% if num_pages|add:-2 > current_page%}
+                   <li><a class="page-numbers" href="?page={{ current_page|add:3}}">...</a></li>
+                   <li><a class="page_numbers" href="?page={{num_pages}}">{{num_pages}}</a></li>
+                 {% endif %}
+
+                {% if current_page < num_pages|add:-1 %}
+                  <li><a class="next page-numbers" href="?page={{current_page|add:1 }}">&raquo</a></li>
+                {% endif %}
+
+              </ul>
+            </div>
+          </div>
+        </main>
+                <div class="col-md-4 col-lg-4">
+                    <div class="row">
+                        <aside class="col-sm-6 col-md-12 aside-1">
+                            <div class="categories-comment-like-item
+                                div_categories-comment-like categor_div"><h3
+                                    class="categories-comment-like_title">Categories</h3>
+                                <ul>
+                                  {% for category in categories %}
+                                    <li class="categor-comment-like_item"><a
+                                            href="{% url 'blog:article_list_by_category' category.slug %}">{{category.name}}</a>
+                                        <span class="cat_count">{{category.articles_count}}</span>
+                                    </li>
+                                  {% endfor %}
+                                </ul>
+                            </div>
+                            {% get_most_commented_articles 5 %}
+                            {% get_most_liked_articles 5 %}
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </div>
+  </section>
+  <hr>
+
+  <script>
+    var header = document.getElementById("navbarResponsive");
+    var sticky = header.offsetTop;
+    var sectionB = document.getElementById("bg0");
+    function myFunction() {
+      if (window.pageYOffset > sticky) {
+        header.classList.add("sticky");
+
+        sectionB.style.marginTop = sticky + 'px'
+
+
+      } else {
+        header.classList.remove("sticky");
+        sectionB.style.marginTop = 30 + 'px'
+      }
+    }
+  </script>
+{% endblock %}

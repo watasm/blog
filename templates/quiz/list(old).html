@@ -1,0 +1,30 @@
+{% extends "blog/base.html" %}
+{% block title %}Quizzes{% endblock %}
+{% block page %}
+<br><br><br><br>
+<div id="sidebar">
+  <h3>Categories</h3>
+  <ul>
+    <li {% if not category %} class="selected" {% endif %}>
+      <a href="{% url 'quiz_list' %}"> All </a>
+    </li>
+    {% for c in categories %}
+      <li {% if category.slug == c.slug %} class="selected" {% endif %}>
+          <a href="{% url 'quiz_list_by_category' c.slug %}"> {{ c.name }} </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+
+
+  <h1>Quizzes</h1>
+  {% for quiz in object_list %}
+    <li><a href="{{quiz.get_absoulte_url}}">{{quiz.title}}</a></li>
+  {% empty %}
+    <p>No quizzes yet.</p>
+  {% endfor %}
+
+  <hr>
+  <li><a href="{% url 'quiz_create' %}">Create new quiz</a></li>
+{% endblock %}

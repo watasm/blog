@@ -1,0 +1,28 @@
+{% extends 'blog/base.html' %}
+{% block title %}Serach result{% endblock title %}
+{% load static %}
+
+{% block css %}
+ <link rel="stylesheet" href="{% static 'blog/css/search_result.css' %}">
+{% endblock %}
+
+{% load tz %}
+{% load tz_detect %}
+{% tz_detect %}
+
+{% block page %}
+  <div class="container">
+    {% for result in search_results %}
+      <div class="card_box">
+        <h5 class="card_title"><a href="{% url 'blog:article_detail' result.id %}">{{result.title}}</a></h5>
+        {% for text in result.meta.highlight.text%}
+          <p class="m-0">{{text|safe}}</p>
+        {% endfor %}
+        <a href="{% url 'blog:article_detail' result.id %}" class="d-flex justify-content-end align-items-center">Read more <i class="fas fa-angle-double-right"></i></a>
+      </div>
+    {% empty %}
+      <h2>No results</h2>
+    {% endfor %}
+  </div>
+  <br>
+{% endblock %}
